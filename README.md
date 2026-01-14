@@ -8,7 +8,7 @@ Cyberpunk-grade multi-agent engine + visualization. Genesis decomposes tasks, sp
 npm install
 cp .env.example .env
 # get Backboard API key at https://backboard.io/hackathons (code: MCHACKS26)
-# paste into BACKBOARD_API_KEY in .env
+# paste into BACKBOARD_API_KEY (and VITE_BACKBOARD_API_KEY if you want UI-side access)
 npm run dev   # runs API (port 4000) + Vite UI (port 5173)
 ```
 
@@ -24,8 +24,8 @@ Open http://localhost:5173 and hit **Initiate Emergence**. With no Backboard key
 ## Environment
 Copy `.env.example` to `.env` and fill:
 - `BACKBOARD_BASE_URL` – Backboard endpoint (default `https://api.backboard.io`)
-- `BACKBOARD_API_KEY` – from https://backboard.io/hackathons (use code **MCHACKS26**)
-- `BACKBOARD_MOCK` – set `0` to force live calls; leave `1`/blank for mock
+- `BACKBOARD_API_KEY` / `VITE_BACKBOARD_API_KEY` – from https://backboard.io/hackathons (use code **MCHACKS26**)
+- `BACKBOARD_MOCK` – set `0` (required for live calls)
 - `PORT` – API port (default 4000)
 - `VITE_EMERGENCE_STATE_API` – UI polling endpoint (default `http://localhost:4000/api/state`)
 - `VITE_EMERGENCE_RUN_API` – UI run endpoint (default `http://localhost:4000/api/run`)

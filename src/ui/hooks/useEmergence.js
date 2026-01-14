@@ -13,10 +13,10 @@ const POLL_MS = Number(import.meta.env.VITE_POLL_MS || 800);
 
 export function useEmergence() {
   const [task, setTask] = useState(mockEmergence.task);
-  const [agents, setAgents] = useState(mockEmergence.agents || []);
-  const [links, setLinks] = useState(mockEmergence.links || []);
-  const [events, setEvents] = useState(mockEmergence.events || []);
-  const [synthesis, setSynthesis] = useState(mockEmergence.synthesis || "");
+  const [agents, setAgents] = useState([]);
+  const [links, setLinks] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [synthesis, setSynthesis] = useState("");
   const [status, setStatus] = useState("idle"); // idle | starting | running | complete | error
   const [error, setError] = useState(null);
 

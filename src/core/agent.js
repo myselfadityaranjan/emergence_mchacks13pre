@@ -144,14 +144,20 @@ export class Agent {
       taskType: "analysis",
     });
 
-    const completion = await invokeModel({
-      model,
-      messages: [
-        { role: "system", content: prompt },
-        { role: "user", content: userPrompt },
-      ],
-      tools: this.tools ? Object.keys(this.tools) : [],
-    });
+    let completion = null;
+    try {
+      completion = await invokeModel({
+        model,
+        messages: [
+          { role: "system", content: prompt },
+          { role: "user", content: userPrompt },
+        ],
+        tools: this.tools ? Object.keys(this.tools) : [],
+      });
+    } catch (err) {
+      await this.appendLog({ type: "error", message: err.message });
+      throw err;
+    }
 
     const output =
       completion?.output ||

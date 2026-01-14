@@ -8,6 +8,7 @@ import useEmergence from "./hooks/useEmergence.js";
 import useAgents from "./hooks/useAgents.js";
 import BackgroundFX from "./components/BackgroundFX.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import StatusBanner from "./components/StatusBanner.jsx";
 
 const views = [
   { key: "input", label: "Genesis" },
@@ -98,11 +99,7 @@ export default function App() {
             </div>
           </nav>
 
-          {error && (
-            <div className="mx-4 mt-2 text-sm text-amber-200 border border-amber-400/40 bg-[rgba(255,209,102,0.08)] rounded-lg px-3 py-2">
-              {error}
-            </div>
-          )}
+          <StatusBanner status={status} message={error} />
 
           <AnimatePresence mode="wait">
             <motion.div

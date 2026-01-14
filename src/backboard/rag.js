@@ -13,8 +13,10 @@ export async function storeEmergence({ task, solution, agents }) {
     createdAt: new Date().toISOString(),
   };
 
-  const result = await storeDocument(COLLECTION, record);
-  if (result?.mock || !result) {
+  try {
+    await storeDocument(COLLECTION, record);
+  } catch (err) {
+    console.error("[rag:store] failed, caching locally", err.message);
     localEmergences.push(record);
   }
   return record;

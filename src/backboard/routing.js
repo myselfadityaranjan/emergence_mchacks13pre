@@ -1,7 +1,7 @@
 const MODEL_MAP = {
-  GENESIS: "gpt-4",
-  CREATIVE: "claude-3-opus",
-  SIMPLE: "llama-2-70b",
+  GENESIS: "gpt-4-turbo",
+  CREATIVE: "claude-sonnet-3-5",
+  SIMPLE: "llama-3-70b",
 };
 
 const ROLE_MODEL_HINT = {

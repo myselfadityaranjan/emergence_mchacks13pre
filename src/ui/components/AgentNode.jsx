@@ -2,22 +2,24 @@ import { memo } from "react";
 import { motion } from "framer-motion";
 
 const statusGlow = {
-  INITIALIZING: "shadow-[0_0_20px_rgba(0,229,255,0.6)]",
-  ACTIVE: "shadow-[0_0_25px_rgba(168,85,247,0.5)]",
-  WORKING: "shadow-[0_0_30px_rgba(105,255,151,0.6)]",
-  COMPLETE: "shadow-[0_0_15px_rgba(255,209,102,0.4)]",
+  INITIALIZING: "shadow-[0_0_30px_rgba(0,240,255,0.8)]",
+  ACTIVE: "shadow-[0_0_35px_rgba(176,38,255,0.8)]",
+  WORKING: "shadow-[0_0_40px_rgba(57,255,20,0.9)]",
+  COMPLETE: "shadow-[0_0_24px_rgba(255,0,110,0.6)]",
 };
 
 function AgentNode({ node, onSelect, isSelected = false }) {
-  const color = node.color || "#00e5ff";
-  const size = 36 + (node.load || 0) * 22;
-  const burst = Array.from({ length: 8 }).map((_, i) => {
-    const angle = (i / 8) * Math.PI * 2;
+  const color = node.color || "#00F0FF";
+  const size = 50 + (node.load || 0) * 28;
+  const burst = Array.from({ length: 10 }).map((_, i) => {
+    const angle = (i / 10) * Math.PI * 2;
     return {
-      dx: Math.cos(angle) * size * 0.8,
-      dy: Math.sin(angle) * size * 0.8,
+      dx: Math.cos(angle) * size * 0.9,
+      dy: Math.sin(angle) * size * 0.9,
     };
   });
+
+  const points = hexPoints(node.x, node.y, size / 2);
 
   return (
     <motion.g
@@ -34,27 +36,27 @@ function AgentNode({ node, onSelect, isSelected = false }) {
         </radialGradient>
       </defs>
 
-      <circle
-        cx={node.x}
-        cy={node.y}
-        r={size * 0.55}
+      <polygon
+        points={points}
         fill={`url(#glow-${node.id})`}
-        opacity={0.6}
+        opacity={0.4}
+        style={{ filter: `drop-shadow(0 0 25px ${color})` }}
       />
 
-      <motion.circle
-        cx={node.x}
-        cy={node.y}
-        r={size / 2}
-        fill={color}
-        className={`glow ${statusGlow[node.state] || ""}`}
-        style={{ filter: "drop-shadow(0 0 12px rgba(0,0,0,0.45))" }}
+      <motion.polygon
+        points={points}
+        fill="rgba(10,10,15,0.9)"
+        stroke={color}
+        strokeWidth="4"
+        className={`${statusGlow[node.state] || ""}`}
         animate={
           node.state === "WORKING"
-            ? { scale: [1, 1.06, 1] }
+            ? { scale: [1, 1.05, 1] }
+            : node.state === "INITIALIZING"
+            ? { rotate: [0, 3, -3, 0] }
             : { scale: 1 }
         }
-        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
       />
 
       {node.state === "INITIALIZING" &&
@@ -73,13 +75,11 @@ function AgentNode({ node, onSelect, isSelected = false }) {
         ))}
 
       {node.state === "WORKING" && (
-        <circle
-          cx={node.x}
-          cy={node.y}
-          r={size * 0.7}
+        <polygon
+          points={points}
           fill="none"
           stroke={color}
-          strokeWidth="1.5"
+          strokeWidth="2"
           opacity={0.5}
           className="animate-[ping_2s_ease_infinite]"
         />
@@ -101,9 +101,10 @@ function AgentNode({ node, onSelect, isSelected = false }) {
         y={node.y + 4}
         textAnchor="middle"
         fontFamily="Share Tech Mono, monospace"
-        fontSize="12"
-        fill="#05060a"
+        fontSize="16"
+        fill="#00F0FF"
         fontWeight="700"
+        style={{ textShadow: "0 0 12px rgba(0,240,255,0.8)" }}
       >
         {labelForRole(node.role)}
       </text>
@@ -121,19 +122,26 @@ function AgentNode({ node, onSelect, isSelected = false }) {
       </text>
 
       {isSelected && (
-        <circle
-          cx={node.x}
-          cy={node.y}
-          r={size * 0.75}
+        <polygon
+          points={points}
           fill="none"
           stroke={color}
           strokeWidth="2"
           strokeDasharray="6 6"
-          opacity={0.8}
+          opacity={0.9}
         />
       )}
     </motion.g>
   );
+}
+
+function hexPoints(cx, cy, r) {
+  const pts = [];
+  for (let i = 0; i < 6; i += 1) {
+    const angle = (Math.PI / 3) * i - Math.PI / 6;
+    pts.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`);
+  }
+  return pts.join(" ");
 }
 
 function labelForRole(role) {

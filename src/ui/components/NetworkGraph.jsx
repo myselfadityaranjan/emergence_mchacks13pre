@@ -10,6 +10,7 @@ import {
 } from "d3-force";
 import AgentNode from "./AgentNode.jsx";
 import ConnectionLine from "./ConnectionLine.jsx";
+import GraphParticles from "./GraphParticles.jsx";
 
 function sanitizeNodes(nodes = []) {
   const seen = new Set();
@@ -135,9 +136,10 @@ function NetworkGraph({ nodes = [], links = [], onSelect }) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full rounded-2xl overflow-hidden glass grid-overlay"
-      style={{ minHeight: "480px" }}
+      className="relative w-full h-full rounded-2xl overflow-hidden glass grid-overlay bg-[rgba(10,10,15,0.9)]"
+      style={{ minHeight: "520px" }}
     >
+      <GraphParticles />
       <svg width={size.width} height={size.height} className="absolute inset-0">
         <defs>
           <filter id="glow">

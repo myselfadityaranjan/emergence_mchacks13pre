@@ -10,22 +10,35 @@ function clone(value) {
 }
 
 async function writeKey(key, value) {
-  const result = await post("/v1/memory/set", { key, value });
-  if (!result || result.mock) {
+  try {
+    await post("/v1/memory/set", { key, value });
+  } catch (err) {
+    console.error("[memory:set] falling back to local store", err.message);
     fallbackStore.set(key, clone(value));
   }
   return value;
 }
 
+async function writeAgentMemory(agentId, memory) {
+  try {
+    await post("/v1/memory", { agent_id: agentId, memory });
+  } catch (err) {
+    console.error("[memory:agent] falling back to key store", err.message);
+    await writeKey(stateKey(agentId), memory);
+  }
+}
+
 async function readKey(key, defaultValue = null) {
-  const result = await get("/v1/memory/get", { key });
-  if (!result || result.mock) {
+  try {
+    const result = await get("/v1/memory/get", { key });
+    return result?.value ?? defaultValue;
+  } catch (err) {
     return fallbackStore.get(key) ?? defaultValue;
   }
-  return result?.value ?? defaultValue;
 }
 
 export async function setAgentState(agentId, state) {
+  await writeAgentMemory(agentId, state);
   return writeKey(stateKey(agentId), state);
 }
 
@@ -45,7 +58,6 @@ export async function inheritParentMemory(agentId, parentId) {
   const parentLog = (await readKey(logKey(parentId), [])) || [];
   if (parentLog.length === 0) return [];
 
-  // Shallow clone so downstream agents can build on inherited traces.
   await writeKey(logKey(agentId), parentLog.map((entry) => ({ ...entry })));
   return parentLog;
 }
