@@ -1,0 +1,16 @@
+{
+  "name": "emergence",
+  "version": "0.1.0",
+  "description": "EMERGENCE - self-organizing AI collective core engine for McHacks 13",
+  "type": "module",
+  "main": "src/engine/emergenceEngine.js",
+  "scripts": {
+    "start": "node src/engine/emergenceEngine.js",
+    "dev": "NODE_ENV=development node src/engine/emergenceEngine.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "dotenv": "^16.3.1",
+    "uuid": "^9.0.1"
+  }
+}
