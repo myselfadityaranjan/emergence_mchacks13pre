@@ -39,9 +39,13 @@ function keywordScore(text, query) {
 }
 
 export async function querySimilar(task, limit = 3) {
-  const response = await queryCollection(COLLECTION, { query: task, limit });
-  if (response?.results && !response.mock) {
-    return response.results;
+  try {
+    const response = await queryCollection(COLLECTION, { query: task, limit });
+    if (response?.results && !response.mock) {
+      return response.results;
+    }
+  } catch (err) {
+    console.error("[rag:query] failed, using local cache", err.message);
   }
 
   if (localEmergences.length === 0) return [];

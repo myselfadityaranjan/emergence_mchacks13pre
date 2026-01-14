@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const BASE_URL = process.env.BACKBOARD_BASE_URL || "https://api.backboard.io";
+const BASE_URL =
+  process.env.BACKBOARD_BASE_URL?.replace(/\/+$/, "") || "https://api.backboard.io";
 const API_KEY = process.env.BACKBOARD_API_KEY || process.env.VITE_BACKBOARD_API_KEY;
 const MOCK_MODE = process.env.BACKBOARD_MOCK === "1" || !API_KEY;
 const MAX_RETRY = 3;
