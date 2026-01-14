@@ -4,10 +4,11 @@ import { mockEmergence } from "../mockData.js";
 const API_STATE_URL =
   import.meta.env.VITE_EMERGENCE_STATE_API ||
   import.meta.env.VITE_EMERGENCE_API ||
-  "http://localhost:4000/api/state";
+  "";
 const API_RUN_URL =
   import.meta.env.VITE_EMERGENCE_RUN_API ||
-  (API_STATE_URL ? API_STATE_URL.replace(/state$/, "run") : null);
+  (API_STATE_URL ? API_STATE_URL.replace(/state$/, "run") : "");
+const HAS_API = Boolean(API_STATE_URL && API_RUN_URL);
 const POLL_MS = Number(import.meta.env.VITE_POLL_MS || 800);
 
 export function useEmergence() {
@@ -22,11 +23,12 @@ export function useEmergence() {
   const pollRef = useRef(null);
 
   useEffect(() => {
-    if (!API_STATE_URL || status !== "running") return undefined;
+    if (!HAS_API || status !== "running") return undefined;
 
     const poll = async () => {
       try {
         const response = await fetch(API_STATE_URL);
+        if (!response.ok) throw new Error(`State poll failed: ${response.status}`);
         const data = await response.json();
         setAgents(data.agents || []);
         setLinks(data.links || []);
@@ -46,7 +48,7 @@ export function useEmergence() {
   }, [status]);
 
   useEffect(() => {
-    if (API_URL) return undefined;
+    if (HAS_API) return undefined;
     if (status !== "running") return undefined;
 
     const sequence = [
@@ -120,7 +122,11 @@ export function useEmergence() {
     setTask(taskText);
     setError(null);
 
-    if (API_RUN_URL) {
+    if (!HAS_API) {
+      setError("API not configured; running mock simulation.");
+    }
+
+    if (HAS_API && API_RUN_URL) {
       setStatus("starting");
       try {
         const response = await fetch(API_RUN_URL, {

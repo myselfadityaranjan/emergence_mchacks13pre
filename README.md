@@ -7,7 +7,8 @@ Cyberpunk-grade multi-agent engine + visualization. Genesis decomposes tasks, sp
 ```bash
 npm install
 cp .env.example .env
-# fill BACKBOARD_API_KEY if available
+# get Backboard API key at https://backboard.io/hackathons (code: MCHACKS26)
+# paste into BACKBOARD_API_KEY in .env
 npm run dev   # runs API (port 4000) + Vite UI (port 5173)
 ```
 
@@ -21,12 +22,15 @@ Open http://localhost:5173 and hit **Initiate Emergence**. With no Backboard key
 - `node scripts/demo.js "<task>"` – CLI demo of full run
 
 ## Environment
+Copy `.env.example` to `.env` and fill:
 - `BACKBOARD_BASE_URL` – Backboard endpoint (default `https://api.backboard.io`)
-- `BACKBOARD_API_KEY` – API key (mock mode if unset)
+- `BACKBOARD_API_KEY` – from https://backboard.io/hackathons (use code **MCHACKS26**)
+- `BACKBOARD_MOCK` – set `0` to force live calls; leave `1`/blank for mock
 - `PORT` – API port (default 4000)
 - `VITE_EMERGENCE_STATE_API` – UI polling endpoint (default `http://localhost:4000/api/state`)
 - `VITE_EMERGENCE_RUN_API` – UI run endpoint (default `http://localhost:4000/api/run`)
-- `VITE_EMERGENCE_API` – legacy single env (falls back for state URL)
+- `VITE_POLL_MS` – UI poll interval in ms
+(.env is already gitignored.)
 
 Optional assets:
 - `public/assets/sounds/agent-spawn.mp3`, `message-sent.mp3`, `task-complete.mp3` (drop in to add subtle sfx)

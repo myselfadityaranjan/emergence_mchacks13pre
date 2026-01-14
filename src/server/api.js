@@ -11,6 +11,7 @@ import StateManager from "../engine/stateManager.js";
 dotenv.config();
 
 const PORT = process.env.PORT || 4000;
+const USING_MOCK = !process.env.BACKBOARD_API_KEY || process.env.BACKBOARD_MOCK === "1";
 
 let messageBus;
 let stateManager;
@@ -42,6 +43,14 @@ function bootEngine() {
 }
 
 bootEngine();
+
+if (USING_MOCK) {
+  console.warn(
+    "[EMERGENCE] BACKBOARD_API_KEY missing or BACKBOARD_MOCK=1. Running in mock mode (no external calls)."
+  );
+} else {
+  console.log("[EMERGENCE] Backboard key detected. Live calls enabled.");
+}
 
 const app = express();
 app.use(cors());
