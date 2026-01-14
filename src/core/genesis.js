@@ -27,6 +27,9 @@ export class Genesis {
     this.outputs = [];
 
     this.messageBus.subscribe(this.id, (message) => this.handleMessage(message));
+    if (this.stateManager) {
+      this.messageBus.onMessage((msg) => this.stateManager.trackMessage(msg));
+    }
   }
 
   async handleMessage(message) {
@@ -56,6 +59,11 @@ export class Genesis {
   }
 
   async run(task) {
+    if (this.stateManager) {
+      this.stateManager.setStatus("running");
+      this.stateManager.setTask(task);
+    }
+
     const subtasks = await this.plan(task);
     const workers = await this.spawnWorkers(subtasks);
 
@@ -89,6 +97,10 @@ export class Genesis {
       });
     }
 
+    if (this.stateManager) {
+      this.stateManager.setSynthesis(synthesis);
+      this.stateManager.setStatus("complete");
+    }
     return summary;
   }
 }

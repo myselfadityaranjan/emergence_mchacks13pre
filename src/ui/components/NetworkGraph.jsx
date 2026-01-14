@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import {
   forceCenter,
   forceCollide,
@@ -11,7 +11,7 @@ import {
 import AgentNode from "./AgentNode.jsx";
 import ConnectionLine from "./ConnectionLine.jsx";
 
-export default function NetworkGraph({ nodes = [], links = [], onSelect }) {
+function NetworkGraph({ nodes = [], links = [], onSelect }) {
   const containerRef = useRef(null);
   const [size, setSize] = useState({ width: 1200, height: 720 });
   const [simNodes, setSimNodes] = useState([]);
@@ -118,3 +118,5 @@ export default function NetworkGraph({ nodes = [], links = [], onSelect }) {
     </div>
   );
 }
+
+export default memo(NetworkGraph);

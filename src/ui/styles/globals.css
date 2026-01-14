@@ -58,3 +58,22 @@ body {
   background: linear-gradient(180deg, rgba(0, 229, 255, 0.7), rgba(168, 85, 247, 0.7));
   border-radius: 999px;
 }
+
+.scanlines {
+  background: linear-gradient(
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(0, 0, 0, 0.05) 50%
+  );
+  background-size: 100% 4px;
+  animation: scanline 6s linear infinite;
+}
+
+.neural-particles {
+  background-image: radial-gradient(circle at 20% 20%, rgba(0, 229, 255, 0.35), transparent 10px),
+    radial-gradient(circle at 50% 40%, rgba(168, 85, 247, 0.25), transparent 10px),
+    radial-gradient(circle at 70% 70%, rgba(105, 255, 151, 0.3), transparent 10px),
+    radial-gradient(circle at 30% 80%, rgba(255, 209, 102, 0.15), transparent 8px);
+  filter: blur(4px);
+  animation: float 12s ease-in-out infinite alternate;
+  opacity: 0.45;
+}

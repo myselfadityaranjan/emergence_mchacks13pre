@@ -11,6 +11,13 @@ const statusGlow = {
 function AgentNode({ node, onSelect, isSelected = false }) {
   const color = node.color || "#00e5ff";
   const size = 36 + (node.load || 0) * 22;
+  const burst = Array.from({ length: 8 }).map((_, i) => {
+    const angle = (i / 8) * Math.PI * 2;
+    return {
+      dx: Math.cos(angle) * size * 0.8,
+      dy: Math.sin(angle) * size * 0.8,
+    };
+  });
 
   return (
     <motion.g
@@ -49,6 +56,21 @@ function AgentNode({ node, onSelect, isSelected = false }) {
         }
         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
       />
+
+      {node.state === "INITIALIZING" &&
+        burst.map((p, idx) => (
+          <motion.circle
+            key={idx}
+            cx={node.x}
+            cy={node.y}
+            r={3 + (idx % 3)}
+            fill={color}
+            opacity={0.8}
+            initial={{ x: 0, y: 0, scale: 0.4 }}
+            animate={{ x: p.dx, y: p.dy, scale: 1, opacity: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: idx * 0.02 }}
+          />
+        ))}
 
       {node.state === "WORKING" && (
         <circle

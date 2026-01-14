@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import GenesisInput from "./screens/GenesisInput.jsx";
 import EmergenceView from "./screens/EmergenceView.jsx";
 import ControlRoom from "./screens/ControlRoom.jsx";
 import SynthesisView from "./screens/SynthesisView.jsx";
 import useEmergence from "./hooks/useEmergence.js";
 import useAgents from "./hooks/useAgents.js";
+import BackgroundFX from "./components/BackgroundFX.jsx";
 
 const views = [
   { key: "input", label: "Genesis" },
@@ -25,6 +27,7 @@ export default function App() {
     stats,
     synthesis,
     startEmergence,
+    error,
   } = useEmergence();
 
   const { agents: agentMeta, selected, selectAgent, clearSelection } = useAgents(
@@ -39,7 +42,7 @@ export default function App() {
 
   const renderView = () => {
     if (view === "input") {
-      return <GenesisInput task={task} onTaskChange={setTask} onStart={handleStart} />;
+      return <GenesisInput task={task} onTaskChange={setTask} onStart={handleStart} status={status} />;
     }
     if (view === "emergence") {
       return (
@@ -50,6 +53,7 @@ export default function App() {
           agents={agentMeta}
           selectedAgent={selected}
           onSelectAgent={(id) => (id ? selectAgent(id) : clearSelection())}
+          status={status}
         />
       );
     }
@@ -60,31 +64,56 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_20%_20%,rgba(0,229,255,0.08),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(255,45,149,0.1),transparent_30%),radial-gradient(circle_at_60%_70%,rgba(105,255,151,0.1),transparent_30%),#05060a] text-white">
-      <nav className="p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-[rgba(0,229,255,0.15)] flex items-center justify-center text-cyber-blue font-bold">
-            E
+    <div className="min-h-screen relative text-white">
+      <BackgroundFX />
+      <div className="relative z-10">
+        <nav className="p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-[rgba(0,229,255,0.15)] flex items-center justify-center text-cyber-blue font-bold">
+              E
+            </div>
+            <div>
+              <div
+                className="text-xs uppercase tracking-[0.3em] text-cyber-purple glitch"
+                data-text="Emergence"
+              >
+                Emergence
+              </div>
+              <div className="text-lg font-semibold">Cyber Collective</div>
+            </div>
           </div>
-          <div>
-            <div className="text-xs uppercase tracking-[0.3em] text-cyber-purple">Emergence</div>
-            <div className="text-lg font-semibold">Cyber Collective</div>
+          <div className="flex items-center gap-2">
+            {views.map((tab) => (
+              <button
+                key={tab.key}
+                className={`tab ${view === tab.key ? "tab-active" : ""}`}
+                onClick={() => setView(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+            <span className="tag">Status: {status}</span>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {views.map((tab) => (
-            <button
-              key={tab.key}
-              className={`tab ${view === tab.key ? "tab-active" : ""}`}
-              onClick={() => setView(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-          <span className="tag">Status: {status}</span>
-        </div>
-      </nav>
-      {renderView()}
+        </nav>
+
+        {error && (
+          <div className="mx-4 mt-2 text-sm text-amber-200 border border-amber-400/40 bg-[rgba(255,209,102,0.08)] rounded-lg px-3 py-2">
+            {error}
+          </div>
+        )}
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={view}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+          >
+            {renderView()}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

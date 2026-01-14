@@ -1,4 +1,4 @@
-export default function GenesisInput({ task, onTaskChange, onStart }) {
+export default function GenesisInput({ task, onTaskChange, onStart, status = "idle" }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     onStart?.(task);
@@ -15,7 +15,10 @@ export default function GenesisInput({ task, onTaskChange, onStart }) {
           <div className="text-sm uppercase tracking-[0.3em] text-cyber-purple mb-3">
             Genesis Console
           </div>
-          <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
+          <h1
+            className="text-4xl font-bold text-white mb-4 leading-tight glitch"
+            data-text="Ignite the EMERGENCE"
+          >
             Ignite the <span className="text-cyber-blue">EMERGENCE</span>
           </h1>
           <p className="text-slate-300 mb-6">
@@ -31,10 +34,11 @@ export default function GenesisInput({ task, onTaskChange, onStart }) {
               placeholder="Ex: Design a mobile app for mental health"
             />
             <div className="flex items-center gap-3">
-              <button type="submit" className="cyber-button">
-                Initiate Emergence
+              <button type="submit" className="cyber-button" disabled={status === "starting"}>
+                {status === "starting" ? "Booting..." : "Initiate Emergence"}
               </button>
               <span className="tag">Max 10 agents · 60fps graph</span>
+              <span className="tag">{status}</span>
             </div>
           </form>
         </div>

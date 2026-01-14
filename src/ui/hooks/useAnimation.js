@@ -4,6 +4,7 @@ export function useAnimation() {
     message: "#ffd166",
     search: "#a855f7",
     complete: "#69ff97",
+    state: "#8b9bb4",
   };
 
   const eventBg = {
@@ -11,6 +12,7 @@ export function useAnimation() {
     message: "rgba(255,209,102,0.12)",
     search: "rgba(168,85,247,0.12)",
     complete: "rgba(105,255,151,0.12)",
+    state: "rgba(255,255,255,0.06)",
   };
 
   const eventIcon = {
@@ -18,6 +20,7 @@ export function useAnimation() {
     message: "✉️",
     search: "🔎",
     complete: "✅",
+    state: "•",
   };
 
   const speedForMessage = (type) => {

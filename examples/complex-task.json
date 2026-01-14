@@ -1,0 +1,5 @@
+{
+  "task": "Launch a SaaS startup for async team retrospectives",
+  "notes": "Market research, pricing, MVP scope, tech stack, GTM plan, risks, and timelines. Assume 8-10 agents.",
+  "expectedAgents": 8
+}

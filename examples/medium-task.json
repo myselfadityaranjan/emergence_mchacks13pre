@@ -1,0 +1,5 @@
+{
+  "task": "Design a mobile app for mental health",
+  "notes": "Include onboarding, daily rituals, privacy, and crisis flow. Lightweight tech choices for hackathon.",
+  "expectedAgents": 5
+}

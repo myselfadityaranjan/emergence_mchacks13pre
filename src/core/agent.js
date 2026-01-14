@@ -83,9 +83,17 @@ export class Agent {
     await this.setState(AGENT_STATES.WORKING);
     this.task = task;
 
-    const searchResults = this.capabilities.includes("search")
-      ? await performSearch(this.id, task, { limit: 5 })
-      : [];
+    let searchResults = [];
+    if (this.capabilities.includes("search")) {
+      if (this.stateManager) {
+        this.stateManager.addEvent({
+          type: "search",
+          text: `${this.role} searching: ${task.slice(0, 64)}`,
+          agentId: this.id,
+        });
+      }
+      searchResults = await performSearch(this.id, task, { limit: 5 });
+    }
 
     const response = await this.generateResponse(task, searchResults);
     await this.appendLog({ type: "result", response });

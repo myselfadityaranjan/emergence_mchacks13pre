@@ -29,6 +29,7 @@ export class MessageBus {
       ts: new Date().toISOString(),
     };
     this.history.push(message);
+    this.emitter.emit("message", message);
 
     if (to) {
       this.deliver(to, message);
@@ -59,6 +60,11 @@ export class MessageBus {
       const matchesFrom = filter.from ? msg.from === filter.from : true;
       return matchesTo && matchesFrom;
     });
+  }
+
+  onMessage(handler) {
+    this.emitter.on("message", handler);
+    return () => this.emitter.off("message", handler);
   }
 }
 

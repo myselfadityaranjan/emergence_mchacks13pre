@@ -1,6 +1,7 @@
 import NetworkGraph from "../components/NetworkGraph.jsx";
 import ActivityFeed from "../components/ActivityFeed.jsx";
 import AgentCard from "../components/AgentCard.jsx";
+import LoadingOverlay from "../components/LoadingOverlay.jsx";
 
 export default function EmergenceView({
   task,
@@ -9,6 +10,7 @@ export default function EmergenceView({
   agents,
   selectedAgent,
   onSelectAgent,
+  status,
 }) {
   const agentMap = new Map(agents.map((a) => [a.id, a]));
 
@@ -33,6 +35,9 @@ export default function EmergenceView({
             onSelect={(id) => onSelectAgent?.(id)}
           />
           <AgentCard agent={agentMap.get(selectedAgent)} onClose={() => onSelectAgent?.(null)} />
+          {(status === "starting" || (status === "running" && graphData.nodes.length === 0)) && (
+            <LoadingOverlay text="Spawning agents..." />
+          )}
         </div>
         <div className="col-span-4 h-full">
           <ActivityFeed events={events} />

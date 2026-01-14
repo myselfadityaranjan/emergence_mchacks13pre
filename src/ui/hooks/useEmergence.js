@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { mockEmergence } from "../mockData.js";
 
-const API_URL = import.meta.env.VITE_EMERGENCE_API || null;
+const API_STATE_URL =
+  import.meta.env.VITE_EMERGENCE_STATE_API ||
+  import.meta.env.VITE_EMERGENCE_API ||
+  "http://localhost:4000/api/state";
+const API_RUN_URL =
+  import.meta.env.VITE_EMERGENCE_RUN_API ||
+  (API_STATE_URL ? API_STATE_URL.replace(/state$/, "run") : null);
 const POLL_MS = Number(import.meta.env.VITE_POLL_MS || 800);
 
 export function useEmergence() {
@@ -10,24 +16,27 @@ export function useEmergence() {
   const [links, setLinks] = useState(mockEmergence.links);
   const [events, setEvents] = useState(mockEmergence.events);
   const [synthesis, setSynthesis] = useState(mockEmergence.synthesis);
-  const [status, setStatus] = useState("idle"); // idle | running | complete
+  const [status, setStatus] = useState("idle"); // idle | starting | running | complete | error
+  const [error, setError] = useState(null);
 
   const pollRef = useRef(null);
 
   useEffect(() => {
-    if (!API_URL || status !== "running") return undefined;
+    if (!API_STATE_URL || status !== "running") return undefined;
 
     const poll = async () => {
       try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_STATE_URL);
         const data = await response.json();
         setAgents(data.agents || []);
         setLinks(data.links || []);
         setEvents((prev) => mergeEvents(prev, data.events || []));
         setSynthesis(data.synthesis || "");
         setStatus(data.status || "running");
-      } catch (error) {
-        console.error("Poll failed", error);
+      } catch (err) {
+        console.error("Poll failed", err);
+        setError("Connection lost. Falling back to mock.");
+        setStatus("error");
       }
     };
 
@@ -107,9 +116,37 @@ export function useEmergence() {
     );
   };
 
-  const startEmergence = (taskText) => {
+  const startEmergence = async (taskText) => {
     setTask(taskText);
-    setStatus("running");
+    setError(null);
+
+    if (API_RUN_URL) {
+      setStatus("starting");
+      try {
+        const response = await fetch(API_RUN_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task: taskText }),
+        });
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(text || "Failed to start run");
+        }
+        setStatus("running");
+        setAgents([]);
+        setLinks([]);
+        setEvents([]);
+        setSynthesis("");
+        return;
+      } catch (err) {
+        console.error("Start failed, using mock", err);
+        setError("API unavailable; using mock simulation.");
+        setStatus("running");
+      }
+    } else {
+      setStatus("running");
+    }
+
     setAgents(mockEmergence.agents);
     setLinks(mockEmergence.links);
     setEvents(mockEmergence.events);
@@ -139,6 +176,7 @@ export function useEmergence() {
     events,
     synthesis,
     status,
+    error,
     stats,
     graphData,
     startEmergence,
