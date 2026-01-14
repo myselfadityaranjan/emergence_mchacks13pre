@@ -3,8 +3,17 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const BASE_URL =
-  process.env.BACKBOARD_BASE_URL?.replace(/\/+$/, "") || "https://api.backboard.io";
+function normalizeBaseUrl(raw) {
+  const cleaned = (raw || "").trim().replace(/\/+$/, "");
+  if (!cleaned) return "https://api.backboard.io";
+  // If user pasted app.backboard.io or added /api, normalize to the supported host.
+  if (cleaned.includes("app.backboard.io")) return "https://api.backboard.io";
+  if (cleaned.endsWith("/api")) return cleaned.replace(/\/api$/, "");
+  if (cleaned.includes("api.backboard.io/api")) return "https://api.backboard.io";
+  return cleaned;
+}
+
+const BASE_URL = normalizeBaseUrl(process.env.BACKBOARD_BASE_URL);
 const API_KEY = process.env.BACKBOARD_API_KEY || process.env.VITE_BACKBOARD_API_KEY;
 const MOCK_MODE = process.env.BACKBOARD_MOCK === "1" || !API_KEY;
 const MAX_RETRY = 3;
@@ -34,6 +43,11 @@ async function safeRequest(fnName, fn, attempt = 1) {
     const status = error?.response?.status;
     const body = error?.response?.data;
     console.error(`[backboard:${fnName}] attempt ${attempt} failed`, status, body || error.message);
+    if (BASE_URL.includes("app.backboard.io")) {
+      console.error(
+        "[backboard] WARNING: BASE_URL points to app.backboard.io. Use https://api.backboard.io"
+      );
+    }
     if (attempt < MAX_RETRY && status && status >= 500) {
       return safeRequest(fnName, fn, attempt + 1);
     }

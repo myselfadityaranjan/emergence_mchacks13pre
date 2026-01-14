@@ -23,7 +23,7 @@ Open http://localhost:5173 and hit **Initiate Emergence**. With no Backboard key
 
 ## Environment
 Copy `.env.example` to `.env` and fill:
-- `BACKBOARD_BASE_URL` – Backboard endpoint (default `https://api.backboard.io`)
+- `BACKBOARD_BASE_URL` – **must** be `https://api.backboard.io` (do NOT use app.backboard.io or add /api)
 - `BACKBOARD_API_KEY` / `VITE_BACKBOARD_API_KEY` – from https://backboard.io/hackathons (use code **MCHACKS26**)
 - `BACKBOARD_MOCK` – set `0` (required for live calls)
 - `PORT` – API port (default 4000)
