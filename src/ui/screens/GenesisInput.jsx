@@ -3,6 +3,7 @@ export default function GenesisInput({ task, onTaskChange, onStart, status = "id
     e.preventDefault();
     onStart?.(task);
   };
+  const busy = status === "starting";
 
   return (
     <div className="min-h-screen flex items-center justify-center p-10">
@@ -34,8 +35,8 @@ export default function GenesisInput({ task, onTaskChange, onStart, status = "id
               placeholder="Ex: Design a mobile app for mental health"
             />
             <div className="flex items-center gap-3">
-              <button type="submit" className="cyber-button" disabled={status === "starting"}>
-                {status === "starting" ? "Booting..." : "Initiate Emergence"}
+              <button type="submit" className="cyber-button" disabled={busy}>
+                {busy ? "Booting..." : "Initiate Emergence"}
               </button>
               <span className="tag">Max 10 agents · 60fps graph</span>
               <span className="tag">{status}</span>

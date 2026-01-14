@@ -1,4 +1,5 @@
 export default function SynthesisView({ synthesis, agents, task }) {
+  const safeAgents = Array.isArray(agents) ? agents : [];
   return (
     <div className="min-h-screen p-6">
       <div className="flex items-center justify-between mb-4">
@@ -26,7 +27,10 @@ export default function SynthesisView({ synthesis, agents, task }) {
             Contributors
           </div>
           <div className="space-y-2">
-            {agents.map((agent) => (
+            {safeAgents.length === 0 && (
+              <div className="text-slate-400 text-sm">No agents recorded yet.</div>
+            )}
+            {safeAgents.map((agent) => (
               <div
                 key={agent.id}
                 className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.04)] border border-slate-800 p-3"

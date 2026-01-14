@@ -13,10 +13,10 @@ const POLL_MS = Number(import.meta.env.VITE_POLL_MS || 800);
 
 export function useEmergence() {
   const [task, setTask] = useState(mockEmergence.task);
-  const [agents, setAgents] = useState(mockEmergence.agents);
-  const [links, setLinks] = useState(mockEmergence.links);
-  const [events, setEvents] = useState(mockEmergence.events);
-  const [synthesis, setSynthesis] = useState(mockEmergence.synthesis);
+  const [agents, setAgents] = useState(mockEmergence.agents || []);
+  const [links, setLinks] = useState(mockEmergence.links || []);
+  const [events, setEvents] = useState(mockEmergence.events || []);
+  const [synthesis, setSynthesis] = useState(mockEmergence.synthesis || "");
   const [status, setStatus] = useState("idle"); // idle | starting | running | complete | error
   const [error, setError] = useState(null);
 
@@ -30,9 +30,12 @@ export function useEmergence() {
         const response = await fetch(API_STATE_URL);
         if (!response.ok) throw new Error(`State poll failed: ${response.status}`);
         const data = await response.json();
-        setAgents(data.agents || []);
-        setLinks(data.links || []);
-        setEvents((prev) => mergeEvents(prev, data.events || []));
+        const safeAgents = Array.isArray(data.agents) ? data.agents : [];
+        const safeLinks = Array.isArray(data.links) ? data.links : [];
+        const safeEvents = Array.isArray(data.events) ? data.events : [];
+        setAgents(safeAgents);
+        setLinks(safeLinks);
+        setEvents((prev) => mergeEvents(prev, safeEvents));
         setSynthesis(data.synthesis || "");
         setStatus(data.status || "running");
       } catch (err) {
@@ -153,9 +156,10 @@ export function useEmergence() {
       setStatus("running");
     }
 
+    // Reset state for mock run
     setAgents(mockEmergence.agents);
-    setLinks(mockEmergence.links);
-    setEvents(mockEmergence.events);
+    setLinks(mockEmergence.links || []);
+    setEvents(mockEmergence.events || []);
     setSynthesis("");
   };
 

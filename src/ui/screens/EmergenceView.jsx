@@ -13,6 +13,8 @@ export default function EmergenceView({
   status,
 }) {
   const agentMap = new Map(agents.map((a) => [a.id, a]));
+  const isLoadingGraph =
+    status === "starting" || (status === "running" && (!graphData.nodes || graphData.nodes.length === 0));
 
   return (
     <div className="min-h-screen p-6">
@@ -35,7 +37,7 @@ export default function EmergenceView({
             onSelect={(id) => onSelectAgent?.(id)}
           />
           <AgentCard agent={agentMap.get(selectedAgent)} onClose={() => onSelectAgent?.(null)} />
-          {(status === "starting" || (status === "running" && graphData.nodes.length === 0)) && (
+          {isLoadingGraph && (
             <LoadingOverlay text="Spawning agents..." />
           )}
         </div>

@@ -19,7 +19,10 @@ export default function ActivityFeed({ events = [] }) {
         <span className="tag">Live</span>
       </div>
       <div ref={listRef} className="flex-1 overflow-y-auto scroll-thin space-y-2">
-        {events.map((event) => (
+        {(!events || events.length === 0) && (
+          <div className="text-sm text-slate-400">Waiting for activity...</div>
+        )}
+        {(events || []).map((event) => (
           <div
             key={event.id}
             className="rounded-lg p-2 text-sm flex items-start gap-2"
