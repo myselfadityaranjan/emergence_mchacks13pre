@@ -96,7 +96,7 @@ export default function App() {
               <button
                 className={`tab ${view === "synthesis" ? "tab-active" : ""}`}
                 onClick={() => setView("synthesis")}
-                disabled={status !== "complete"}
+                disabled={status === "idle" || status === "starting"}
               >
                 Synthesis
               </button>
