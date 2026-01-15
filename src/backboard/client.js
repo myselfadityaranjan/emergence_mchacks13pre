@@ -100,9 +100,6 @@ const PRIORITY_MODELS = [
   "grok-3",
   "grok-3-mini",
   "grok-4-0709",
-  // Cohere
-  "command-a-03-2025",
-  "command-r",
 ];
 
 function unique(list) {
@@ -110,8 +107,8 @@ function unique(list) {
 }
 
 function isAllowedModel(name) {
-  // Only allow OpenAI (gpt-), Google (gemini-), xAI (grok-), Cohere (command-)
-  return /^(gpt-|gemini-|grok-|command-)/.test(name);
+  // Only allow OpenAI (gpt-), Google (gemini-), xAI (grok-)
+  return /^(gpt-|gemini-|grok-)/.test(name);
 }
 
 async function resolveModelCandidates(requested) {
