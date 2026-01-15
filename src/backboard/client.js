@@ -81,8 +81,8 @@ async function loadModels() {
   return modelCache;
 }
 
+// Priority: OpenAI first, then Google, then xAI.
 const PRIORITY_MODELS = [
-  // OpenAI
   "gpt-4.1-mini",
   "gpt-4.1-nano",
   "gpt-4o",
@@ -92,11 +92,9 @@ const PRIORITY_MODELS = [
   "gpt-5-chat-latest",
   "gpt-5-mini",
   "gpt-5-nano",
-  // Google
   "gemini-2.5-flash-lite",
   "gemini-2.5-flash",
   "gemini-2.5-pro",
-  // xAI
   "grok-3",
   "grok-3-mini",
   "grok-4-0709",
@@ -212,6 +210,10 @@ export async function invokeModel({ model, messages }) {
       const status = err?.response?.status;
       if (status === 404 || code === "model_not_found") {
         console.warn(`[backboard] model not available: ${candidate}, trying next`);
+        continue;
+      }
+      if (status === 429 || code === "insufficient_quota") {
+        console.warn(`[backboard] quota hit for ${candidate}, trying next provider/model`);
         continue;
       }
       throw err;
