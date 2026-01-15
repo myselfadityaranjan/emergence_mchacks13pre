@@ -74,6 +74,89 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+function startDemoRun(task, state) {
+  const DEMO_TASK = task || "Design a mobile app for mental health";
+  const genesisId = "genesis-demo";
+  const workers = [
+    { id: "researcher-demo", role: "researcher", parentId: genesisId, model: "gpt-4o" },
+    { id: "analyst-demo", role: "analyst", parentId: genesisId, model: "gpt-4.1-mini" },
+    { id: "architect-demo", role: "architect", parentId: genesisId, model: "gemini-2.5-flash" },
+    { id: "designer-demo", role: "designer", parentId: genesisId, model: "grok-3" },
+  ];
+
+  const synthesisText = [
+    "Summary: Calm, privacy-first mental health companion with daily check-ins, offline-first journaling, and guided CBT micro-sessions.",
+    "Key Insights: Users crave trust (privacy), gentle nudges, crisis shortcuts, and community with safety filters.",
+    "Proposed Approach: React Native app; encrypted local storage with optional sync; soothing gradients; 3-tap flows; adaptive journeys by mood.",
+    "Risks: Privacy, engagement drop-off, and alert fatigue; mitigate with transparent data handling, streaks, and low-friction shortcuts.",
+    "Next Steps: Wireframe key screens, finalize content scripts, run 10-user pilot, instrument telemetry + red-team privacy.",
+  ].join("\n");
+
+  const schedule = (ms, fn) => setTimeout(fn, ms);
+
+  // Seed genesis and status.
+  state.registerAgent({ id: genesisId, role: "genesis", parentId: null, state: "ACTIVE" }, 0);
+  state.addEvent({ type: "state", text: "Genesis booting cinematic demo mode" });
+
+  // Spawn workers slowly.
+  workers.forEach((w, idx) => {
+    schedule(800 + idx * 900, () => {
+      state.registerAgent({ ...w, state: "SPAWNED" }, 1);
+      state.updateAgentState(w.id, "WORKING");
+      state.addEvent({
+        type: "message",
+        text: `${w.role} dispatch → model ${w.model}`,
+        agentId: w.id,
+      });
+    });
+  });
+
+  // Simulated messages/results.
+  const snippets = {
+    researcher: "Trends: AI personalization, privacy-by-default, offline-first journaling. Competitors: Calm, Headspace, Wysa; gaps in community safety.",
+    analyst: "Risks: privacy trust, drop-off after week 2, crisis routing; add transparent data copy, streaks, crisis shortcuts.",
+    architect: "Stack: React Native, local SQLite w/ encryption, optional Firebase sync; services: auth, telemetry, crash reporting.",
+    designer: "UX: neon-accent calm palette, glass panels, code-rain backgrounds; flows: 3-tap check-in, mood wheel, adaptive insights.",
+  };
+
+  workers.forEach((w, idx) => {
+    schedule(3200 + idx * 900, () => {
+      const msg = snippets[w.role] || `Findings for ${w.role}`;
+      state.addEvent({
+        type: "message",
+        text: `${w.role} → genesis: ${msg}`,
+        agentId: genesisId,
+      });
+    });
+  });
+
+  // Mark completions.
+  workers.forEach((w, idx) => {
+    schedule(5400 + idx * 700, () => {
+      state.updateAgentState(w.id, "COMPLETE");
+      state.addEvent({
+        type: "complete",
+        text: `${w.role} complete • model ${w.model}`,
+        agentId: w.id,
+      });
+    });
+  });
+
+  // Synthesis.
+  schedule(7600, () => {
+    state.setSynthesis(synthesisText);
+    state.setStatus("complete");
+    state.addEvent({
+      type: "complete",
+      text: "Genesis synthesis ready — cinematic demo",
+      agentId: genesisId,
+    });
+  });
+
+  // Keep promise alive until end.
+  return new Promise((resolve) => setTimeout(resolve, 8500));
+}
+
 app.get("/health", (_req, res) => {
   res.json({ ok: true, status: stateManager?.status || "idle" });
 });
@@ -89,8 +172,17 @@ app.post("/api/run", async (req, res) => {
 
   bootEngine();
   stateManager.setTask(task);
-  stateManager.setStatus("running");
 
+  if (DEMO_MODE || USING_MOCK || !CONNECTION_OK) {
+    stateManager.setStatus("demo");
+    currentRun = startDemoRun(task, stateManager).finally(() => {
+      currentRun = null;
+    });
+    res.json({ status: "demo", task });
+    return;
+  }
+
+  stateManager.setStatus("running");
   currentRun = genesis
     .run(task)
     .catch((error) => {
