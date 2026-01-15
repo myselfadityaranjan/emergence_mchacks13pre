@@ -205,6 +205,7 @@ export async function invokeModel({ model, messages }) {
   const assistantId = await ensureAssistant(messages?.[0]?.content || "EMERGENCE agent.");
   const threadId = await ensureThread(assistantId);
   const candidates = await resolveModelCandidates(model);
+  console.log("[backboard] model candidates:", candidates.join(", "));
 
   const content = messages
     .map((m) => `[${m.role}] ${m.content}`)
@@ -221,6 +222,7 @@ export async function invokeModel({ model, messages }) {
   };
 
   let lastError;
+  const attempts = [];
   for (const candidate of candidates) {
     try {
       const { form, headers } = buildForm(candidate);
@@ -234,8 +236,9 @@ export async function invokeModel({ model, messages }) {
       };
     } catch (err) {
       lastError = err;
-      const code = err?.response?.data?.error?.code || err?.response?.data?.code;
       const status = err?.response?.status;
+      const code = err?.response?.data?.error?.code || err?.response?.data?.code;
+      attempts.push({ candidate, status, code, message: err?.response?.data?.error?.message || err.message });
       if (status === 404 || code === "model_not_found") {
         console.warn(`[backboard] model not available: ${candidate}, trying next`);
         continue;
@@ -247,7 +250,8 @@ export async function invokeModel({ model, messages }) {
       throw err;
     }
   }
-  throw lastError || new Error("All model candidates failed");
+  const summary = attempts.map((a) => `${a.candidate}:${a.status || ""}:${a.code || ""}`).join(" | ");
+  throw lastError || new Error(`All model candidates failed. Attempts: ${summary || "none"}`);
 }
 
 export async function listModels() {
