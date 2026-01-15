@@ -19,7 +19,7 @@ export class TaskDecomposer {
 
     try {
       const completion = await invokeModel({
-        model: process.env.BACKBOARD_MODEL_NAME || "gpt-3.5-turbo",
+        model: process.env.BACKBOARD_MODEL_NAME,
         messages: [
           { role: "system", content: "Plan subtasks for the agent collective." },
           { role: "user", content: prompt },

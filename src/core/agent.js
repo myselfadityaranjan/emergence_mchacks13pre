@@ -119,13 +119,11 @@ export class Agent {
       .filter(Boolean)
       .join("\n\n");
 
-    const model = process.env.BACKBOARD_MODEL_NAME || "gpt-3.5-turbo";
-
     try {
       let completion = null;
       try {
         completion = await invokeModel({
-          model,
+          model: process.env.BACKBOARD_MODEL_NAME,
           messages: [
             { role: "system", content: prompt },
             { role: "user", content: userPrompt },

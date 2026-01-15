@@ -83,14 +83,16 @@ async function loadModels() {
 
 const PRIORITY_MODELS = [
   "gpt-4.1-mini",
+  "gpt-4.1-nano",
   "gpt-4o",
-  "gpt-4.1",
   "gpt-4o-mini",
+  "gpt-4.1",
   "gpt-5-mini",
-  "claude-3-7-sonnet-20250219",
-  "claude-opus-4-1-20250805",
+  "gpt-5-nano",
   "gemini-2.5-flash-lite",
   "gemini-2.5-flash",
+  "gemini-2.5-pro",
+  "claude-3-7-sonnet-20250219",
   "grok-3-mini",
   "command-r7b-12-2024",
   "ai21/jamba-mini-1.7",
@@ -99,8 +101,8 @@ const PRIORITY_MODELS = [
   "amazon/nova-lite-v1",
 ];
 
-async function resolveModel(requested) {
-  const fallbackOrder = [
+async function resolveModelCandidates(requested) {
+  const baseOrder = [
     requested,
     PREFERRED_MODEL,
     ...PRIORITY_MODELS,
@@ -109,16 +111,14 @@ async function resolveModel(requested) {
   try {
     const models = await loadModels();
     const names = new Set(models.map((m) => m.name));
-    for (const name of fallbackOrder) {
-      if (names.has(name)) return name;
-    }
-    // pick first llm
-    const llm = models.find((m) => m.model_type === "llm");
-    if (llm?.name) return llm.name;
+    const valid = baseOrder.filter((name) => names.has(name));
+    if (valid.length) return valid;
+    const llm = models.filter((m) => m.model_type === "llm").map((m) => m.name);
+    if (llm.length) return llm;
   } catch (err) {
-    console.warn("[backboard] model list fetch failed, using requested/default", err.message);
+    console.warn("[backboard] model list fetch failed, using fallback order only", err.message);
   }
-  return requested || PREFERRED_MODEL || PRIORITY_MODELS[0] || "gpt-4.1-mini";
+  return baseOrder.length ? baseOrder : ["gpt-4.1-mini"];
 }
 
 async function ensureAssistant(systemPrompt = "You are an EMERGENCE agent.") {
@@ -150,7 +150,7 @@ export async function invokeModel({ model, messages }) {
   ensureLive();
   const assistantId = await ensureAssistant(messages?.[0]?.content || "EMERGENCE agent.");
   const threadId = await ensureThread(assistantId);
-  const resolvedModel = await resolveModel(model);
+  const candidates = await resolveModelCandidates(model);
 
   const content = messages
     .map((m) => `[${m.role}] ${m.content}`)
@@ -161,23 +161,32 @@ export async function invokeModel({ model, messages }) {
   form.append("stream", "false");
   form.append("send_to_llm", "true");
   form.append("memory", "Auto");
-  if (resolvedModel) {
-    form.append("model_name", resolvedModel);
+  const headers = { ...form.getHeaders(), "X-API-Key": API_KEY };
+
+  let lastError;
+  for (const candidate of candidates) {
+    try {
+      if (candidate) form.set("model_name", candidate);
+      const data = await safeRequest("invokeModel", () =>
+        client.post(`/threads/${threadId}/messages`, form, { headers })
+      );
+      return {
+        output: data?.content || JSON.stringify(data),
+        data,
+        model: candidate,
+      };
+    } catch (err) {
+      lastError = err;
+      const code = err?.response?.data?.error?.code || err?.response?.data?.code;
+      const status = err?.response?.status;
+      if (status === 404 || code === "model_not_found") {
+        console.warn(`[backboard] model not available: ${candidate}, trying next`);
+        continue;
+      }
+      throw err;
+    }
   }
-
-  const headers = {
-    ...form.getHeaders(),
-    "X-API-Key": API_KEY,
-  };
-
-  const data = await safeRequest("invokeModel", () =>
-    client.post(`/threads/${threadId}/messages`, form, { headers })
-  );
-
-  return {
-    output: data?.content || JSON.stringify(data),
-    data,
-  };
+  throw lastError || new Error("All model candidates failed");
 }
 
 export async function listModels() {
