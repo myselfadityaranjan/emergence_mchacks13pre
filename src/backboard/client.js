@@ -101,24 +101,39 @@ const PRIORITY_MODELS = [
   "amazon/nova-lite-v1",
 ];
 
+function unique(list) {
+  return Array.from(new Set(list.filter(Boolean)));
+}
+
 async function resolveModelCandidates(requested) {
-  const baseOrder = [
-    requested,
-    PREFERRED_MODEL,
-    ...PRIORITY_MODELS,
-  ].filter(Boolean);
+  const basePriority = unique([requested, PREFERRED_MODEL, ...PRIORITY_MODELS]);
+  let candidates = [...basePriority];
 
   try {
     const models = await loadModels();
-    const names = new Set(models.map((m) => m.name));
-    const valid = baseOrder.filter((name) => names.has(name));
-    if (valid.length) return valid;
-    const llm = models.filter((m) => m.model_type === "llm").map((m) => m.name);
-    if (llm.length) return llm;
+    const available = models.filter((m) => m.model_type === "llm").map((m) => m.name);
+    const availableSet = new Set(available);
+
+    const preferredAndAvailable = basePriority.filter((m) => availableSet.has(m));
+    const availableRemainder = available.filter((m) => !preferredAndAvailable.includes(m));
+    const preferredButNotListed = basePriority.filter((m) => !availableSet.has(m));
+
+    candidates = unique([
+      ...preferredAndAvailable,
+      ...availableRemainder,
+      ...preferredButNotListed,
+    ]);
   } catch (err) {
-    console.warn("[backboard] model list fetch failed, using fallback order only", err.message);
+    console.warn("[backboard] model list fetch failed, falling back to priority only:", err.message);
   }
-  return baseOrder.length ? baseOrder : ["gpt-4.1-mini"];
+
+  if (!candidates.length) {
+    candidates = ["gpt-4.1-mini", "gpt-4o"];
+  } else {
+    candidates = unique([...candidates, "gpt-4.1-mini", "gpt-4o"]);
+  }
+
+  return candidates;
 }
 
 async function ensureAssistant(systemPrompt = "You are an EMERGENCE agent.") {

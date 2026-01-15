@@ -27,7 +27,7 @@ Copy `.env.example` to `.env` and fill:
 - `BACKBOARD_BASE_URL` – Backboard base (per docs: `https://app.backboard.io/api`)
 - `BACKBOARD_API_KEY` / `VITE_BACKBOARD_API_KEY` – from https://backboard.io/hackathons (use code **MCHACKS26**)
 - `BACKBOARD_MOCK` – set `0` (required for live calls)
-- `BACKBOARD_MODEL_NAME` – preferred model (e.g., `gpt-3.5-turbo`); auto-resolves via `/models`
+- `BACKBOARD_MODEL_NAME` – preferred model (recommend `gpt-4.1-mini`); auto-resolves/fallbacks via `/models`
 - `PORT` – API port (default 4000)
 - `VITE_EMERGENCE_STATE_API` – UI polling endpoint (default `http://localhost:4000/api/state`)
 - `VITE_EMERGENCE_RUN_API` – UI run endpoint (default `http://localhost:4000/api/run`)
