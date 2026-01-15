@@ -92,7 +92,7 @@ const PRIORITY_MODELS = [
   "gemini-2.5-flash-lite",
   "gemini-2.5-flash",
   "gemini-2.5-pro",
-  "claude-3-7-sonnet-20250219",
+  // Removed claude variants due to model_not_found for this account.
   "grok-3-mini",
   "command-r7b-12-2024",
   "ai21/jamba-mini-1.7",
