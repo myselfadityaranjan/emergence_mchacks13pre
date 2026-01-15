@@ -11,17 +11,21 @@ function clone(value) {
 
 async function writeKey(key, value) {
   try {
-    await post("/v1/memory/set", { key, value });
+    await post("/memory/set", { key, value });
   } catch (err) {
-    console.error("[memory:set] falling back to local store", err.message);
-    fallbackStore.set(key, clone(value));
+    try {
+      await post("/v1/memory/set", { key, value });
+    } catch (e2) {
+      console.error("[memory:set] falling back to local store", e2.message);
+      fallbackStore.set(key, clone(value));
+    }
   }
   return value;
 }
 
 async function writeAgentMemory(agentId, memory) {
   try {
-    await post("/v1/memory", { agent_id: agentId, memory });
+    await post("/memory", { agent_id: agentId, memory });
   } catch (err) {
     console.error("[memory:agent] falling back to key store", err.message);
     await writeKey(stateKey(agentId), memory);
@@ -30,11 +34,17 @@ async function writeAgentMemory(agentId, memory) {
 
 async function readKey(key, defaultValue = null) {
   try {
-    const result = await get("/v1/memory/get", { key });
-    return result?.value ?? defaultValue;
+    const result = await get("/memory/get", { key });
+    if (result?.value !== undefined) return result.value;
   } catch (err) {
-    return fallbackStore.get(key) ?? defaultValue;
   }
+  try {
+    const result = await get("/v1/memory/get", { key });
+    if (result?.value !== undefined) return result.value;
+  } catch (err) {
+    // ignore
+  }
+  return fallbackStore.get(key) ?? defaultValue;
 }
 
 export async function setAgentState(agentId, state) {

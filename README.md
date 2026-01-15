@@ -20,6 +20,7 @@ Open http://localhost:5173 and hit **Initiate Emergence**. With no Backboard key
 - `npm run ui` – Vite dev server
 - `npm run build:ui` / `npm run preview:ui` – build/preview UI
 - `node scripts/demo.js "<task>"` – CLI demo of full run
+- `node scripts/test-connection.js` – probe Backboard endpoints
 
 ## Environment
 Copy `.env.example` to `.env` and fill:

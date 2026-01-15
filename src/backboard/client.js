@@ -6,7 +6,9 @@ dotenv.config();
 /**
  * Backboard endpoint reference (per docs screenshot / v1.0.0 OAS):
  * Base URL: https://app.backboard.io/api
- * Endpoints: /messages, /rag/query, /rag/store, /search, /memory
+ * Potential paths observed: /messages, /v1/messages, /rag/query, /v1/rag/query, etc.
+ * Because the public docs are inconsistent across versions, this client will probe multiple
+ * path candidates until one succeeds per resource and cache the working path.
  */
 function normalizeBaseUrl(raw) {
   const cleaned = (raw || "").trim().replace(/\/+$/, "");
@@ -37,6 +39,41 @@ function logCall(name, start, extra = {}) {
   const ms = Date.now() - start;
   // eslint-disable-next-line no-console
   console.log(`[backboard:${name}] ${ms}ms`, extra);
+}
+
+function joinPath(base, suffix) {
+  return `${base.replace(/\/+$/, "")}/${suffix.replace(/^\/+/, "")}`;
+}
+
+const endpointCache = {};
+
+async function requestWithCandidates(fnName, method, candidates, { data, params } = {}) {
+  const start = Date.now();
+  // If cached path exists, try it first
+  const cached = endpointCache[fnName];
+  const ordered = cached ? [cached, ...candidates.filter((c) => c !== cached)] : candidates;
+
+  let lastError;
+  for (const path of ordered) {
+    try {
+      const res =
+        method === "get"
+          ? await client.get(path, { params })
+          : await client[method](path, data);
+      endpointCache[fnName] = path;
+      logCall(fnName, start, { path });
+      return res?.data ?? null;
+    } catch (error) {
+      lastError = error;
+      const status = error?.response?.status;
+      if (status && status >= 500 && status < 600) {
+        continue;
+      }
+      // On 404, try next candidate
+      continue;
+    }
+  }
+  throw lastError || new Error(`All endpoint candidates failed for ${fnName}`);
 }
 
 async function safeRequest(fnName, fn, attempt = 1) {
@@ -93,33 +130,55 @@ export async function get(path, params = {}) {
 export async function invokeModel({ model, messages, tools = [], params = {} }) {
   ensureLive();
   return safeRequest("invokeModel", () =>
-    client.post("/messages", {
-      model,
-      messages,
-      tools,
-      params,
-    })
+    requestWithCandidates(
+      "invokeModel",
+      "post",
+      ["/messages", "/v1/messages", "/api/messages", "/api/v1/messages"],
+      {
+        data: {
+          model,
+          messages,
+          tools,
+          params,
+        },
+      }
+    )
   );
 }
 
 export async function storeDocument(collection, document) {
   ensureLive();
   return safeRequest("storeDocument", () =>
-    client.post("/rag/store", { collection, document })
+    requestWithCandidates(
+      "storeDocument",
+      "post",
+      ["/rag/store", "/v1/rag/store", "/api/rag/store", "/api/v1/rag/store"],
+      { data: { collection, document } }
+    )
   );
 }
 
 export async function queryCollection(collection, query) {
   ensureLive();
   return safeRequest("queryCollection", () =>
-    client.post("/rag/query", { collection, query })
+    requestWithCandidates(
+      "queryCollection",
+      "post",
+      ["/rag/query", "/v1/rag/query", "/api/rag/query", "/api/v1/rag/query"],
+      { data: { collection, query } }
+    )
   );
 }
 
 export async function searchWeb(query, options = {}) {
   ensureLive();
   return safeRequest("searchWeb", () =>
-    client.get("/search", { params: { q: query, ...options } })
+    requestWithCandidates(
+      "searchWeb",
+      "get",
+      ["/search", "/v1/search", "/api/search", "/api/v1/search"],
+      { params: { q: query, ...options } }
+    )
   );
 }
 
