@@ -74,29 +74,41 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-function startDemoRun(task, state) {
-  const DEMO_TASK = task || "Design a mobile app for mental health";
+function startDemoRun(task, state, scenario = "mental_health") {
+  const IS_FINANCE = scenario === "finance";
+  const DEMO_TASK = IS_FINANCE
+    ? "Design a finance tracker for ASML stock"
+    : task || "Design a mobile app for mental health";
+
   const genesisId = "genesis-demo";
   const workers = [
-    { id: "researcher-demo", role: "researcher", parentId: genesisId, model: "gpt-4o" },
-    { id: "analyst-demo", role: "analyst", parentId: genesisId, model: "gpt-4.1-mini" },
-    { id: "architect-demo", role: "architect", parentId: genesisId, model: "gemini-2.5-flash" },
-    { id: "designer-demo", role: "designer", parentId: genesisId, model: "grok-3" },
+    { id: "researcher-demo", role: "researcher", parentId: genesisId, model: IS_FINANCE ? "gpt-4.1" : "gpt-4o" },
+    { id: "analyst-demo", role: "analyst", parentId: genesisId, model: IS_FINANCE ? "gpt-4.1-mini" : "gpt-4.1-mini" },
+    { id: "architect-demo", role: "architect", parentId: genesisId, model: IS_FINANCE ? "grok-3" : "gemini-2.5-flash" },
+    { id: "designer-demo", role: "designer", parentId: genesisId, model: IS_FINANCE ? "gpt-4o-mini" : "grok-3" },
   ];
 
-  const synthesisText = [
-    "Summary: Calm, privacy-first mental health companion with daily check-ins, offline-first journaling, and guided CBT micro-sessions.",
-    "Key Insights: Users crave trust (privacy), gentle nudges, crisis shortcuts, and community with safety filters.",
-    "Proposed Approach: React Native app; encrypted local storage with optional sync; soothing gradients; 3-tap flows; adaptive journeys by mood.",
-    "Risks: Privacy, engagement drop-off, and alert fatigue; mitigate with transparent data handling, streaks, and low-friction shortcuts.",
-    "Next Steps: Wireframe key screens, finalize content scripts, run 10-user pilot, instrument telemetry + red-team privacy.",
-  ].join("\n");
+  const synthesisText = IS_FINANCE
+    ? [
+        "Summary: ASML-focused finance tracker with live price feeds, position health, and risk alerts.",
+        "Key Insights: Users want semiconductor-specific news, implied-vol indicators, and tax-lot clarity.",
+        "Proposed Approach: Mobile-first dashboard with sparkline tiles, broker sync (optional), and offline watchlist cache.",
+        "Risks: Data freshness, API rate limits, and over-alerting; mitigate with tiered polling + quiet hours.",
+        "Next Steps: Wire charts, connect market data mock, ship alert rules (price bands, volume spikes), pilot with 10 users.",
+      ].join("\n")
+    : [
+        "Summary: Calm, privacy-first mental health companion with daily check-ins, offline-first journaling, and guided CBT micro-sessions.",
+        "Key Insights: Users crave trust (privacy), gentle nudges, crisis shortcuts, and community with safety filters.",
+        "Proposed Approach: React Native app; encrypted local storage with optional sync; soothing gradients; 3-tap flows; adaptive journeys by mood.",
+        "Risks: Privacy, engagement drop-off, and alert fatigue; mitigate with transparent data handling, streaks, and low-friction shortcuts.",
+        "Next Steps: Wireframe key screens, finalize content scripts, run 10-user pilot, instrument telemetry + red-team privacy.",
+      ].join("\n");
 
   const schedule = (ms, fn) => setTimeout(fn, ms);
 
   // Seed genesis and status.
   state.registerAgent({ id: genesisId, role: "genesis", parentId: null, state: "ACTIVE" }, 0);
-  state.addEvent({ type: "state", text: "Genesis booting cinematic demo mode" });
+  state.addEvent({ type: "state", text: `Genesis briefing: ${DEMO_TASK}` });
 
   // Spawn workers slowly.
   workers.forEach((w, idx) => {
@@ -112,12 +124,19 @@ function startDemoRun(task, state) {
   });
 
   // Simulated messages/results.
-  const snippets = {
-    researcher: "Trends: AI personalization, privacy-by-default, offline-first journaling. Competitors: Calm, Headspace, Wysa; gaps in community safety.",
-    analyst: "Risks: privacy trust, drop-off after week 2, crisis routing; add transparent data copy, streaks, crisis shortcuts.",
-    architect: "Stack: React Native, local SQLite w/ encryption, optional Firebase sync; services: auth, telemetry, crash reporting.",
-    designer: "UX: neon-accent calm palette, glass panels, code-rain backgrounds; flows: 3-tap check-in, mood wheel, adaptive insights.",
-  };
+  const snippets = IS_FINANCE
+    ? {
+        researcher: "Market pulse: ASML uptrend; catalysts: lithography demand, EUV capacity; risks: export controls, cyclical capex.",
+        analyst: "Signals: watch volume spikes + IV crush around earnings; alert on -3% intraday with news sentiment filter.",
+        architect: "Stack: React Native + local cache; market data via websocket; rule engine for alerts; portfolio import via CSV/API.",
+        designer: "UI: dark glass cards with cyan/green sparklines; watchlist chips; risk meter ring; alert composer wizard.",
+      }
+    : {
+        researcher: "Trends: AI personalization, privacy-by-default, offline-first journaling. Competitors: Calm, Headspace, Wysa; gaps in community safety.",
+        analyst: "Risks: privacy trust, drop-off after week 2, crisis routing; add transparent data copy, streaks, crisis shortcuts.",
+        architect: "Stack: React Native, local SQLite w/ encryption, optional Firebase sync; services: auth, telemetry, crash reporting.",
+        designer: "UX: neon-accent calm palette, glass panels, code-rain backgrounds; flows: 3-tap check-in, mood wheel, adaptive insights.",
+      };
 
   workers.forEach((w, idx) => {
     schedule(3200 + idx * 900, () => {
@@ -148,7 +167,7 @@ function startDemoRun(task, state) {
     state.setStatus("complete");
     state.addEvent({
       type: "complete",
-      text: "Genesis synthesis ready — cinematic demo",
+      text: "Genesis synthesis ready",
       agentId: genesisId,
     });
   });
@@ -174,11 +193,13 @@ app.post("/api/run", async (req, res) => {
   stateManager.setTask(task);
 
   if (DEMO_MODE || USING_MOCK || !CONNECTION_OK) {
-    stateManager.setStatus("demo");
-    currentRun = startDemoRun(task, stateManager).finally(() => {
+    stateManager.setStatus("running");
+    const scenario =
+      DEMO_MODE && USING_MOCK ? "finance" : "mental_health";
+    currentRun = startDemoRun(task, stateManager, scenario).finally(() => {
       currentRun = null;
     });
-    res.json({ status: "demo", task });
+    res.json({ status: "running", task });
     return;
   }
 

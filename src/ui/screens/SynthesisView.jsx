@@ -1,5 +1,15 @@
 export default function SynthesisView({ synthesis, agents, task }) {
   const safeAgents = Array.isArray(agents) ? agents : [];
+  const headline =
+    synthesis ||
+    [
+      "Summary: Awaiting final synthesis...",
+      "Key Insights: Pending...",
+      "Proposed Approach: Pending...",
+      "Risks: Pending...",
+      "Next Steps: Pending...",
+    ].join("\n");
+
   return (
     <div className="min-h-screen p-6">
       <div className="flex items-center justify-between mb-4">
@@ -19,7 +29,7 @@ export default function SynthesisView({ synthesis, agents, task }) {
             Cohesive Plan
           </div>
           <div className="text-lg leading-relaxed text-slate-100 whitespace-pre-wrap">
-            {synthesis || "Awaiting synthesis..."}
+            {headline}
           </div>
         </div>
         <div className="col-span-1">
