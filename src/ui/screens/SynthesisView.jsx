@@ -52,7 +52,7 @@ export default function SynthesisView({ synthesis, agents, task, ready = false }
                     {agent.model || "model-auto"}
                   </div>
                   <div className="text-[11px] text-slate-500">
-                    {agent.id?.replace(/-demo$/, "")}
+                    {agent.id ? agent.id.replace(/-demo$/, "") : ""}
                   </div>
                 </div>
                 <span className="tag">{agent.state}</span>

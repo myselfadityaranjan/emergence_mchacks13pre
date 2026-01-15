@@ -90,12 +90,12 @@ function startDemoRun(task, state, scenario = "mental_health") {
 
   const synthesisText = IS_FINANCE
     ? [
-        "Summary: ASML-focused finance tracker delivering live pricing, position health, semiconductor news sentiment, and proactive risk alerts tailored to a single high-conviction ticker.",
-        "Key Insights: Power-users want semiconductor-specific signals (lithography demand, export controls, earnings IV swings), clean tax-lot visibility, and alerting that avoids noise. Trust hinges on data freshness and transparent sourcing.",
-        "Proposed Approach: Mobile-first glassmorphic dashboard; real-time price via websockets; portfolio import (CSV/API); alert rule engine (price bands, volume/IV spikes, news sentiment); offline watchlist cache; sentiment ribbon for sector news.",
-        "Architecture: React Native client with encrypted local cache; data adapters for price/news; rule engine service; notification pipeline with rate-limits and quiet hours; optional broker sync. Charts: sparklines + mini depth; risk meter ring per position.",
-        "Risks: Stale data and API throttling, over-alerting, and poor explainability of signals. Mitigations: tiered polling with backoff, deduped alert batching, user-tunable thresholds, and per-alert provenance (source + timestamp).",
-        "Next Steps: Wire charting primitives and alert composer; integrate mock data feed; pilot with 10 users on ASML-only scope; add stress-test for rate limits; ship exportable activity log for compliance.",
+        "Summary: ASML-focused finance tracker delivering live price/volume, position health, semiconductor news sentiment, and proactive risk alerts for a high-conviction ticker. Prioritizes data transparency and explainable signals.",
+        "Key Insights: Users want lithography/semiconductor-specific signals (export controls, EUV/DUV capacity, earnings IV swings) plus clean tax-lot visibility. Alert quality matters more than quantity; provenance and timestamps drive trust.",
+        "Proposed Approach: Mobile-first glass dashboard; websocket price feed; portfolio import (CSV/API); alert engine with rule templates (price bands, volume/IV spikes, sentiment shifts); offline watchlist cache; sector sentiment ribbon; optional broker sync.",
+        "Architecture: React Native client + encrypted local cache; data adapters for price/news; rule engine microservice; notification pipeline with rate limits/quiet hours; charts: sparklines, mini depth, risk meter ring per position; exportable audit log.",
+        "Risks: Stale data and API throttling, noisy alerts, and low explainability. Mitigations: tiered polling with backoff, deduped alert batching, user-tunable thresholds, per-alert provenance (source + timestamp), and preview of sample alerts during setup.",
+        "Next Steps: Wire charting primitives + alert composer wizard; integrate mock data feed; pilot with 10 ASML-focused users; stress-test rate limits; add compliance-friendly exports and alert quality feedback loop.",
       ].join("\n\n")
     : [
         "Summary: Calm, privacy-first mental health companion with daily check-ins, offline-first journaling, guided CBT micro-sessions, and adaptive nudges that respect user consent.",
