@@ -7,11 +7,13 @@ import AgentSpawner from "../core/agentSpawner.js";
 import Genesis from "../core/genesis.js";
 import Synthesizer from "../core/synthesizer.js";
 import StateManager from "../engine/stateManager.js";
+import { testBackboardConnection } from "../backboard/client.js";
 
 dotenv.config();
 
 const PORT = process.env.PORT || 4000;
 const USING_MOCK = !process.env.BACKBOARD_API_KEY || process.env.BACKBOARD_MOCK === "1";
+const DEMO_MODE = process.env.BACKBOARD_DEMO === "1";
 
 let messageBus;
 let stateManager;
@@ -44,13 +46,25 @@ function bootEngine() {
 
 bootEngine();
 
-if (USING_MOCK) {
-  console.warn(
-    "[EMERGENCE] BACKBOARD_API_KEY missing or BACKBOARD_MOCK=1. Running in mock mode (no external calls)."
-  );
-} else {
-  console.log("[EMERGENCE] Backboard key detected. Live calls enabled.");
+async function runDiagnostics() {
+  console.log("[CONFIG] BASE_URL", process.env.BACKBOARD_BASE_URL || "https://app.backboard.io/api");
+  console.log("[CONFIG] KEY", process.env.BACKBOARD_API_KEY ? "SET" : "MISSING");
+  if (USING_MOCK) {
+    console.warn(
+      "[EMERGENCE] BACKBOARD_API_KEY missing or BACKBOARD_MOCK=1. Running in mock/demo mode."
+    );
+    return false;
+  }
+  const ok = await testBackboardConnection();
+  if (!ok) {
+    console.warn("[EMERGENCE] Backboard unreachable. Enabling demo mode.");
+  } else {
+    console.log("[EMERGENCE] Backboard reachable. Live calls enabled.");
+  }
+  return ok;
 }
+
+runDiagnostics();
 
 const app = express();
 app.use(cors());
