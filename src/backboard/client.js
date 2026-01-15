@@ -156,17 +156,20 @@ export async function invokeModel({ model, messages }) {
     .map((m) => `[${m.role}] ${m.content}`)
     .join("\n\n");
 
-  const form = new FormData();
-  form.append("content", content);
-  form.append("stream", "false");
-  form.append("send_to_llm", "true");
-  form.append("memory", "Auto");
-  const headers = { ...form.getHeaders(), "X-API-Key": API_KEY };
+  const buildForm = (candidate) => {
+    const f = new FormData();
+    f.append("content", content);
+    f.append("stream", "false");
+    f.append("send_to_llm", "true");
+    f.append("memory", "Auto");
+    if (candidate) f.append("model_name", candidate);
+    return { form: f, headers: { ...f.getHeaders(), "X-API-Key": API_KEY } };
+  };
 
   let lastError;
   for (const candidate of candidates) {
     try {
-      if (candidate) form.set("model_name", candidate);
+      const { form, headers } = buildForm(candidate);
       const data = await safeRequest("invokeModel", () =>
         client.post(`/threads/${threadId}/messages`, form, { headers })
       );
