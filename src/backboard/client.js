@@ -87,16 +87,18 @@ const PRIORITY_MODELS = [
   "gpt-4o",
   "gpt-4o-mini",
   "gpt-4.1",
+  "gpt-5",
+  "gpt-5-chat-latest",
   "gpt-5-mini",
   "gpt-5-nano",
   "gemini-2.5-flash-lite",
   "gemini-2.5-flash",
   "gemini-2.5-pro",
-  // Removed claude variants due to model_not_found for this account.
+  // High-context, commonly available; avoid claude/command due to repeated 404s.
+  "grok-3",
   "grok-3-mini",
-  "command-r7b-12-2024",
-  "ai21/jamba-mini-1.7",
   "ai21/jamba-large-1.7",
+  "ai21/jamba-mini-1.7",
   "amazon/nova-2-lite-v1",
   "amazon/nova-lite-v1",
 ];
