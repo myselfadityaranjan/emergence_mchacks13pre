@@ -98,20 +98,32 @@ function AgentNode({ node, onSelect, isSelected = false }) {
 
       <text
         x={node.x}
-        y={node.y + 2}
+        y={node.y - 4}
+        textAnchor="middle"
+        fontFamily="Share Tech Mono, monospace"
+        fontSize="12"
+        fill="#9ad8ff"
+        fontWeight="700"
+        style={{ textShadow: "0 0 12px rgba(0,240,255,0.8)" }}
+      >
+        {node.id}
+      </text>
+
+      <text
+        x={node.x}
+        y={node.y + 12}
         textAnchor="middle"
         fontFamily="Share Tech Mono, monospace"
         fontSize="14"
         fill="#00F0FF"
-        fontWeight="700"
-        style={{ textShadow: "0 0 12px rgba(0,240,255,0.8)" }}
+        fontWeight="800"
       >
         {node.role || labelForRole(node.role)}
       </text>
 
       <text
         x={node.x}
-        y={node.y + 18}
+        y={node.y + 28}
         textAnchor="middle"
         fontFamily="Space Grotesk, sans-serif"
         fontSize="11"

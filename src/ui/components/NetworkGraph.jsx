@@ -136,7 +136,7 @@ function NetworkGraph({ nodes = [], links = [], onSelect }) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full rounded-2xl overflow-hidden glass grid-overlay bg-[rgba(18,24,36,0.9)]"
+      className="relative w-full h-full rounded-2xl overflow-hidden glass grid-overlay mindmap-bg"
       style={{ minHeight: "520px" }}
     >
       <GraphParticles />

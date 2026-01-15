@@ -15,9 +15,11 @@ export default function ConnectionLine({ source, target, type = "spawn" }) {
         x2={target.x}
         y2={target.y}
         stroke={color}
-        strokeOpacity="0.6"
-        strokeWidth={type === "spawn" ? 2 : 1.5}
+        strokeOpacity="0.85"
+        strokeWidth={type === "spawn" ? 3 : 2}
+        strokeLinecap="round"
         className="line-animate"
+        style={{ filter: `drop-shadow(0 0 10px ${color})` }}
       />
 
       <motion.circle
