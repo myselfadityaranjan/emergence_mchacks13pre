@@ -82,6 +82,7 @@ async function loadModels() {
 }
 
 const PRIORITY_MODELS = [
+  // OpenAI
   "gpt-4.1-mini",
   "gpt-4.1-nano",
   "gpt-4o",
@@ -91,34 +92,45 @@ const PRIORITY_MODELS = [
   "gpt-5-chat-latest",
   "gpt-5-mini",
   "gpt-5-nano",
+  // Google
   "gemini-2.5-flash-lite",
   "gemini-2.5-flash",
   "gemini-2.5-pro",
-  // High-context, commonly available; avoid claude/command due to repeated 404s.
+  // xAI
   "grok-3",
   "grok-3-mini",
-  "ai21/jamba-large-1.7",
-  "ai21/jamba-mini-1.7",
-  "amazon/nova-2-lite-v1",
-  "amazon/nova-lite-v1",
+  "grok-4-0709",
+  // Cohere
+  "command-a-03-2025",
+  "command-r",
 ];
 
 function unique(list) {
   return Array.from(new Set(list.filter(Boolean)));
 }
 
+function isAllowedModel(name) {
+  // Only allow OpenAI (gpt-), Google (gemini-), xAI (grok-), Cohere (command-)
+  return /^(gpt-|gemini-|grok-|command-)/.test(name);
+}
+
 async function resolveModelCandidates(requested) {
-  const basePriority = unique([requested, PREFERRED_MODEL, ...PRIORITY_MODELS]);
+  const basePriority = unique([requested, PREFERRED_MODEL, ...PRIORITY_MODELS]).filter(isAllowedModel);
   let candidates = [...basePriority];
 
   try {
     const models = await loadModels();
-    const available = models.filter((m) => m.model_type === "llm").map((m) => m.name);
+    const available = models
+      .filter((m) => m.model_type === "llm")
+      .map((m) => m.name)
+      .filter(isAllowedModel);
     const availableSet = new Set(available);
 
     const preferredAndAvailable = basePriority.filter((m) => availableSet.has(m));
     const availableRemainder = available.filter((m) => !preferredAndAvailable.includes(m));
-    const preferredButNotListed = basePriority.filter((m) => !availableSet.has(m));
+    const preferredButNotListed = basePriority
+      .filter((m) => !availableSet.has(m))
+      .filter(isAllowedModel);
 
     candidates = unique([
       ...preferredAndAvailable,
@@ -132,7 +144,9 @@ async function resolveModelCandidates(requested) {
   if (!candidates.length) {
     candidates = ["gpt-4.1-mini", "gpt-4o"];
   } else {
-    candidates = unique([...candidates, "gpt-4.1-mini", "gpt-4o"]);
+    candidates = unique(
+      [...candidates, "gpt-4.1-mini", "gpt-4o"].filter(isAllowedModel)
+    );
   }
 
   return candidates;
