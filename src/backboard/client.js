@@ -81,8 +81,8 @@ async function loadModels() {
   return modelCache;
 }
 
-// Priority: OpenAI first, then Google, then xAI.
-const PRIORITY_MODELS = [
+// Buckets so we can reorder by provider if a preferred model is set.
+const OPENAI_MODELS = [
   "gpt-4.1-mini",
   "gpt-4.1-nano",
   "gpt-4o",
@@ -92,13 +92,40 @@ const PRIORITY_MODELS = [
   "gpt-5-chat-latest",
   "gpt-5-mini",
   "gpt-5-nano",
+];
+
+const GOOGLE_MODELS = [
   "gemini-2.5-flash-lite",
   "gemini-2.5-flash",
   "gemini-2.5-pro",
+];
+
+const XAI_MODELS = [
   "grok-3",
   "grok-3-mini",
   "grok-4-0709",
 ];
+
+function bucketedPriority(preferred) {
+  const provider = preferred?.startsWith("gemini-")
+    ? "google"
+    : preferred?.startsWith("grok-")
+      ? "xai"
+      : preferred?.startsWith("gpt-")
+        ? "openai"
+        : null;
+
+  // Default order: OpenAI -> Google -> xAI.
+  let order = [...OPENAI_MODELS, ...GOOGLE_MODELS, ...XAI_MODELS];
+
+  if (provider === "google") {
+    order = [...GOOGLE_MODELS, ...XAI_MODELS, ...OPENAI_MODELS];
+  } else if (provider === "xai") {
+    order = [...XAI_MODELS, ...GOOGLE_MODELS, ...OPENAI_MODELS];
+  }
+
+  return order;
+}
 
 function unique(list) {
   return Array.from(new Set(list.filter(Boolean)));
@@ -110,7 +137,8 @@ function isAllowedModel(name) {
 }
 
 async function resolveModelCandidates(requested) {
-  const basePriority = unique([requested, PREFERRED_MODEL, ...PRIORITY_MODELS]).filter(isAllowedModel);
+  const priorityOrder = bucketedPriority(requested || PREFERRED_MODEL);
+  const basePriority = unique([requested, PREFERRED_MODEL, ...priorityOrder]).filter(isAllowedModel);
   let candidates = [...basePriority];
 
   try {
