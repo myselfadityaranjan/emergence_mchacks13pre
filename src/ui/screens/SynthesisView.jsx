@@ -37,7 +37,7 @@ export default function SynthesisView({ synthesis, agents, task, ready = false }
           <div className="text-sm uppercase tracking-[0.2em] text-cyber-blue mb-2">
             Contributors
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-[60vh] overflow-auto scroll-thin">
             {safeAgents.length === 0 && (
               <div className="text-slate-400 text-sm">No agents recorded yet.</div>
             )}
@@ -48,7 +48,12 @@ export default function SynthesisView({ synthesis, agents, task, ready = false }
               >
                 <div>
                   <div className="text-xs uppercase text-slate-400">{agent.role}</div>
-                  <div className="text-sm text-white">{agent.id}</div>
+                  <div className="text-sm text-white">
+                    {agent.model || "model-auto"}
+                  </div>
+                  <div className="text-[11px] text-slate-500">
+                    {agent.id?.replace(/-demo$/, "")}
+                  </div>
                 </div>
                 <span className="tag">{agent.state}</span>
               </div>

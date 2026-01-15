@@ -35,11 +35,6 @@ export default function App() {
     setView("mission");
   };
 
-  // Auto-advance to synthesis when ready.
-  if (view !== "synthesis" && status === "complete" && synthesisReady) {
-    setView("synthesis");
-  }
-
   const renderView = () => {
     if (view === "input") {
       return <GenesisInput task={task} onTaskChange={setTask} onStart={handleStart} status={status} />;

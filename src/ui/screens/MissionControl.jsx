@@ -19,7 +19,7 @@ export default function MissionControl({
     status === "starting" || (status === "running" && (!graphData.nodes || graphData.nodes.length === 0));
 
   return (
-    <div className="min-h-screen p-6 space-y-4">
+    <div className="min-h-screen p-6 space-y-4 flex flex-col">
       <div className="panel p-4 flex items-center justify-between relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_30%_20%,rgba(0,240,255,0.15),transparent_45%),radial-gradient(circle_at_70%_60%,rgba(176,38,255,0.12),transparent_40%)]" />
         <div className="relative">
@@ -35,8 +35,8 @@ export default function MissionControl({
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-4 h-[75vh]">
-        <div className="col-span-8 relative h-full">
+      <div className="grid grid-cols-12 gap-4 flex-1 min-h-0">
+        <div className="col-span-8 relative h-full min-h-0">
           <div className="panel h-full relative overflow-hidden">
             <NetworkGraph
               nodes={graphData.nodes}
@@ -47,8 +47,8 @@ export default function MissionControl({
             {isLoadingGraph && <LoadingOverlay text="Spawning agents..." />}
           </div>
         </div>
-        <div className="col-span-4 h-full flex flex-col gap-3">
-          <div className="panel flex-1">
+        <div className="col-span-4 h-full min-h-0 flex flex-col gap-3">
+          <div className="panel flex-1 min-h-0 overflow-hidden">
             <ActivityFeed events={events} />
           </div>
           <div className="panel h-[38%] overflow-hidden">
