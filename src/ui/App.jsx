@@ -8,6 +8,7 @@ import useAgents from "./hooks/useAgents.js";
 import BackgroundFX from "./components/BackgroundFX.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import StatusBanner from "./components/StatusBanner.jsx";
+import logo from "/assets/logo.svg";
 
 export default function App() {
   const [view, setView] = useState("input");
@@ -70,9 +71,7 @@ export default function App() {
         <ErrorBoundary>
           <nav className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-[rgba(0,229,255,0.15)] flex items-center justify-center text-cyber-blue font-bold">
-                E
-              </div>
+              <img src={logo} alt="Emergence" className="h-10 w-10 rounded-xl shadow-lg" />
               <div>
                 <div
                   className="text-xs uppercase tracking-[0.3em] text-cyber-purple glitch"
