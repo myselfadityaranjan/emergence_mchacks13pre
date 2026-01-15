@@ -22,8 +22,10 @@ export function useEmergence() {
 
   const pollRef = useRef(null);
 
+  const shouldPoll = status === "running" || status === "demo";
+
   useEffect(() => {
-    if (!HAS_API || status !== "running") return undefined;
+    if (!HAS_API || !shouldPoll) return undefined;
 
     const poll = async () => {
       try {
@@ -37,7 +39,7 @@ export function useEmergence() {
         setLinks(safeLinks);
         setEvents((prev) => mergeEvents(prev, safeEvents));
         setSynthesis(data.synthesis || "");
-        setStatus(data.status || "running");
+        setStatus(data.status || status || "running");
       } catch (err) {
         console.error("Poll failed", err);
         setError("Connection lost. Falling back to mock.");
@@ -48,7 +50,7 @@ export function useEmergence() {
     poll();
     pollRef.current = setInterval(poll, POLL_MS);
     return () => clearInterval(pollRef.current);
-  }, [status]);
+  }, [status, shouldPoll]);
 
   useEffect(() => {
     if (HAS_API) return undefined;
@@ -141,7 +143,8 @@ export function useEmergence() {
           const text = await response.text();
           throw new Error(text || "Failed to start run");
         }
-        setStatus("running");
+        const data = await response.json().catch(() => ({}));
+        setStatus(data.status || "running");
         setAgents([]);
         setLinks([]);
         setEvents([]);
