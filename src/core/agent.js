@@ -119,7 +119,7 @@ export class Agent {
       .filter(Boolean)
       .join("\n\n");
 
-    const model = "gpt-4o";
+    const model = process.env.BACKBOARD_MODEL_NAME || "gpt-3.5-turbo";
 
     try {
       let completion = null;

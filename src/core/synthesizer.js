@@ -2,7 +2,7 @@ import { invokeModel } from "../backboard/client.js";
 
 export class Synthesizer {
   async synthesize(task, agentOutputs = []) {
-    const model = "gpt-4o";
+    const model = process.env.BACKBOARD_MODEL_NAME || "gpt-3.5-turbo";
 
     const prompt = [
       `Task: ${task}`,

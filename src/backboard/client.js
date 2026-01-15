@@ -7,9 +7,12 @@ dotenv.config();
 const BASE_URL = normalizeBaseUrl(process.env.BACKBOARD_BASE_URL);
 const API_KEY = process.env.BACKBOARD_API_KEY || process.env.VITE_BACKBOARD_API_KEY;
 const MOCK_MODE = process.env.BACKBOARD_MOCK === "1" || !API_KEY;
+const PREFERRED_MODEL = process.env.BACKBOARD_MODEL_NAME;
 
 let cachedAssistantId = process.env.BACKBOARD_ASSISTANT_ID || null;
 let cachedThreadId = null;
+let modelCache = null;
+let resolving = false;
 
 function normalizeBaseUrl(raw) {
   const cleaned = (raw || "").trim().replace(/\/+$/, "");
@@ -68,18 +71,68 @@ export async function testBackboardConnection() {
   }
 }
 
+async function loadModels() {
+  if (resolving) return modelCache;
+  resolving = true;
+  if (modelCache) return modelCache;
+  const data = await safeRequest("listModels", () => client.get("/models"));
+  modelCache = data?.models || [];
+  resolving = false;
+  return modelCache;
+}
+
+const PRIORITY_MODELS = [
+  "gpt-4.1-mini",
+  "gpt-4o",
+  "gpt-4.1",
+  "gpt-4o-mini",
+  "gpt-5-mini",
+  "claude-3-7-sonnet-20250219",
+  "claude-opus-4-1-20250805",
+  "gemini-2.5-flash-lite",
+  "gemini-2.5-flash",
+  "grok-3-mini",
+  "command-r7b-12-2024",
+  "ai21/jamba-mini-1.7",
+  "ai21/jamba-large-1.7",
+  "amazon/nova-2-lite-v1",
+  "amazon/nova-lite-v1",
+];
+
+async function resolveModel(requested) {
+  const fallbackOrder = [
+    requested,
+    PREFERRED_MODEL,
+    ...PRIORITY_MODELS,
+  ].filter(Boolean);
+
+  try {
+    const models = await loadModels();
+    const names = new Set(models.map((m) => m.name));
+    for (const name of fallbackOrder) {
+      if (names.has(name)) return name;
+    }
+    // pick first llm
+    const llm = models.find((m) => m.model_type === "llm");
+    if (llm?.name) return llm.name;
+  } catch (err) {
+    console.warn("[backboard] model list fetch failed, using requested/default", err.message);
+  }
+  return requested || PREFERRED_MODEL || PRIORITY_MODELS[0] || "gpt-4.1-mini";
+}
+
 async function ensureAssistant(systemPrompt = "You are an EMERGENCE agent.") {
   ensureLive();
-  if (cachedAssistantId) return cachedAssistantId;
-
-  const payload = {
-    name: "EMERGENCE Assistant",
-    system_prompt: systemPrompt,
-  };
-  const data = await safeRequest("createAssistant", () =>
-    client.post("/assistants", payload, { headers: { "Content-Type": "application/json" } })
-  );
-  cachedAssistantId = data.assistant_id;
+  if (!cachedAssistantId) {
+    const payload = {
+      name: "EMERGENCE Assistant",
+      system_prompt: systemPrompt,
+    };
+    const data = await safeRequest("createAssistant", () =>
+      client.post("/assistants", payload, { headers: { "Content-Type": "application/json" } })
+    );
+    cachedAssistantId = data.assistant_id;
+  }
   return cachedAssistantId;
 }
 
@@ -97,6 +150,7 @@ export async function invokeModel({ model, messages }) {
   ensureLive();
   const assistantId = await ensureAssistant(messages?.[0]?.content || "EMERGENCE agent.");
   const threadId = await ensureThread(assistantId);
+  const resolvedModel = await resolveModel(model);
 
   const content = messages
     .map((m) => `[${m.role}] ${m.content}`)
@@ -107,8 +161,8 @@ export async function invokeModel({ model, messages }) {
   form.append("stream", "false");
   form.append("send_to_llm", "true");
   form.append("memory", "Auto");
-  if (model) {
-    form.append("model_name", model);
+  if (resolvedModel) {
+    form.append("model_name", resolvedModel);
   }
 
   const headers = {
