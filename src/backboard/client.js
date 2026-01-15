@@ -6,7 +6,7 @@ dotenv.config();
 /**
  * Backboard endpoint reference (per docs screenshot / v1.0.0 OAS):
  * Base URL: https://app.backboard.io/api
- * Endpoints: /v1/messages, /v1/rag/query, /v1/rag/store, /v1/search, /v1/memory
+ * Endpoints: /messages, /rag/query, /rag/store, /search, /memory
  */
 function normalizeBaseUrl(raw) {
   const cleaned = (raw || "").trim().replace(/\/+$/, "");
@@ -93,7 +93,7 @@ export async function get(path, params = {}) {
 export async function invokeModel({ model, messages, tools = [], params = {} }) {
   ensureLive();
   return safeRequest("invokeModel", () =>
-    client.post("/v1/messages", {
+    client.post("/messages", {
       model,
       messages,
       tools,
@@ -105,21 +105,21 @@ export async function invokeModel({ model, messages, tools = [], params = {} }) 
 export async function storeDocument(collection, document) {
   ensureLive();
   return safeRequest("storeDocument", () =>
-    client.post("/v1/rag/store", { collection, document })
+    client.post("/rag/store", { collection, document })
   );
 }
 
 export async function queryCollection(collection, query) {
   ensureLive();
   return safeRequest("queryCollection", () =>
-    client.post("/v1/rag/query", { collection, query })
+    client.post("/rag/query", { collection, query })
   );
 }
 
 export async function searchWeb(query, options = {}) {
   ensureLive();
   return safeRequest("searchWeb", () =>
-    client.get("/v1/search", { params: { q: query, ...options } })
+    client.get("/search", { params: { q: query, ...options } })
   );
 }
 

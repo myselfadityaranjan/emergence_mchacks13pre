@@ -14,6 +14,7 @@ dotenv.config();
 const PORT = process.env.PORT || 4000;
 const USING_MOCK = !process.env.BACKBOARD_API_KEY || process.env.BACKBOARD_MOCK === "1";
 const DEMO_MODE = process.env.BACKBOARD_DEMO === "1";
+let CONNECTION_OK = false;
 
 let messageBus;
 let stateManager;
@@ -53,15 +54,18 @@ async function runDiagnostics() {
     console.warn(
       "[EMERGENCE] BACKBOARD_API_KEY missing or BACKBOARD_MOCK=1. Running in mock/demo mode."
     );
-    return false;
+    CONNECTION_OK = false;
+    return CONNECTION_OK;
   }
   const ok = await testBackboardConnection();
   if (!ok) {
     console.warn("[EMERGENCE] Backboard unreachable. Enabling demo mode.");
+    CONNECTION_OK = false;
   } else {
     console.log("[EMERGENCE] Backboard reachable. Live calls enabled.");
+    CONNECTION_OK = true;
   }
-  return ok;
+  return CONNECTION_OK;
 }
 
 runDiagnostics();
@@ -91,13 +95,13 @@ app.post("/api/run", async (req, res) => {
     .run(task)
     .catch((error) => {
       console.error("Emergence run failed:", error);
-      stateManager.setStatus("error");
+      stateManager.setStatus(DEMO_MODE || !CONNECTION_OK ? "demo" : "error");
     })
     .finally(() => {
       currentRun = null;
     });
 
-  res.json({ status: "running", task });
+  res.json({ status: CONNECTION_OK ? "running" : "demo", task });
 });
 
 app.get("/api/state", (_req, res) => {

@@ -10,6 +10,7 @@ import {
 import { performSearch } from "../backboard/search.js";
 import { getPromptForRole } from "../agents/prompts/index.js";
 import { getCapabilities } from "../agents/capabilities.js";
+import { demoAgentResult } from "../backboard/demo.js";
 
 export const AGENT_STATES = {
   SPAWNED: "SPAWNED",
@@ -144,35 +145,48 @@ export class Agent {
       taskType: "analysis",
     });
 
-    let completion = null;
     try {
-      completion = await invokeModel({
+      let completion = null;
+      try {
+        completion = await invokeModel({
+          model,
+          messages: [
+            { role: "system", content: prompt },
+            { role: "user", content: userPrompt },
+          ],
+          tools: this.tools ? Object.keys(this.tools) : [],
+        });
+      } catch (err) {
+        await this.appendLog({ type: "error", message: err.message });
+        throw err;
+      }
+
+      const output =
+        completion?.output ||
+        completion?.data ||
+        completion?.text ||
+        JSON.stringify(completion);
+
+      return {
+        agentId: this.id,
+        role: this.role,
+        task,
         model,
-        messages: [
-          { role: "system", content: prompt },
-          { role: "user", content: userPrompt },
-        ],
-        tools: this.tools ? Object.keys(this.tools) : [],
-      });
+        output,
+        searchResults,
+      };
     } catch (err) {
-      await this.appendLog({ type: "error", message: err.message });
-      throw err;
+      // Demo fallback
+      const demo = demoAgentResult(this.role, task);
+      return {
+        agentId: this.id,
+        role: this.role,
+        task,
+        model: demo.model,
+        output: demo.output,
+        searchResults,
+      };
     }
-
-    const output =
-      completion?.output ||
-      completion?.data ||
-      completion?.text ||
-      JSON.stringify(completion);
-
-    return {
-      agentId: this.id,
-      role: this.role,
-      task,
-      model,
-      output,
-      searchResults,
-    };
   }
 
   async shutdown() {

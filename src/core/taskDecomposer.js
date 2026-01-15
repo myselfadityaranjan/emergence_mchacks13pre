@@ -2,6 +2,7 @@ import { selectModel } from "../backboard/routing.js";
 import { invokeModel } from "../backboard/client.js";
 import { querySimilar } from "../backboard/rag.js";
 import { DEFAULT_TEAM } from "../agents/roles.js";
+import { demoDecomposition } from "../backboard/demo.js";
 
 export class TaskDecomposer {
   constructor({ rag }) {
@@ -32,18 +33,22 @@ export class TaskDecomposer {
       "Prefer diversity in roles and avoid redundant subtasks.",
     ].join("\n\n");
 
-    const completion = await invokeModel({
-      model,
-      messages: [
-        { role: "system", content: "Plan subtasks for the agent collective." },
-        { role: "user", content: prompt },
-      ],
-    });
+    try {
+      const completion = await invokeModel({
+        model,
+        messages: [
+          { role: "system", content: "Plan subtasks for the agent collective." },
+          { role: "user", content: prompt },
+        ],
+      });
 
-    const parsed = this.parseCompletion(completion);
-    if (parsed.length > 0) return parsed;
+      const parsed = this.parseCompletion(completion);
+      if (parsed.length > 0) return parsed;
+    } catch (err) {
+      console.error("[decompose] falling back to demo/fallback", err.message);
+    }
 
-    return this.fallback(task);
+    return demoDecomposition(task) || this.fallback(task);
   }
 
   parseCompletion(completion) {
