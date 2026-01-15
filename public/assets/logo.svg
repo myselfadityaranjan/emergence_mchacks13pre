@@ -1,3 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1949" height="1949" viewBox="0 0 1949 1949">
-  <image href="emergence_logo.png" width="1949" height="1949"/>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF"/>
+      <stop offset="50%" stop-color="#B026FF"/>
+      <stop offset="100%" stop-color="#39FF14"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="30%" y1="0%" x2="70%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#FF006E" stop-opacity="0.8"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="140" fill="#05070D"/>
+  <circle cx="256" cy="256" r="190" stroke="url(#g1)" stroke-width="20" opacity="0.9"/>
+  <circle cx="256" cy="256" r="138" stroke="url(#g2)" stroke-width="12" opacity="0.7"/>
+  <path d="M164 260C164 212 204 170 258 170C312 170 348 212 348 256C348 304 314 342 268 344C238 346 214 330 202 312" stroke="url(#g1)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M178 188L258 256L330 196" stroke="url(#g2)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="180" cy="190" r="10" fill="#00F0FF"/>
+  <circle cx="258" cy="256" r="12" fill="#B026FF"/>
+  <circle cx="330" cy="196" r="10" fill="#39FF14"/>
+  <path d="M196 340L256 280L316 332" stroke="url(#g1)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+  <circle cx="196" cy="340" r="8" fill="#00F0FF" opacity="0.8"/>
+  <circle cx="316" cy="332" r="8" fill="#FF006E" opacity="0.8"/>
 </svg>
