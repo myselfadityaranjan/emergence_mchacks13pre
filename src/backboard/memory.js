@@ -27,8 +27,12 @@ async function writeAgentMemory(agentId, memory) {
   try {
     await post("/memory", { agent_id: agentId, memory });
   } catch (err) {
-    console.error("[memory:agent] falling back to key store", err.message);
-    await writeKey(stateKey(agentId), memory);
+    try {
+      await post("/v1/memory", { agent_id: agentId, memory });
+    } catch (e2) {
+      console.error("[memory:agent] falling back to key store", e2.message);
+      await writeKey(stateKey(agentId), memory);
+    }
   }
 }
 

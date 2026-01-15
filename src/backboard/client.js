@@ -133,7 +133,7 @@ export async function invokeModel({ model, messages, tools = [], params = {} }) 
     requestWithCandidates(
       "invokeModel",
       "post",
-      ["/messages", "/v1/messages", "/api/messages", "/api/v1/messages"],
+      ["/messages", "/v1/messages"],
       {
         data: {
           model,
@@ -152,7 +152,7 @@ export async function storeDocument(collection, document) {
     requestWithCandidates(
       "storeDocument",
       "post",
-      ["/rag/store", "/v1/rag/store", "/api/rag/store", "/api/v1/rag/store"],
+      ["/rag/store", "/v1/rag/store"],
       { data: { collection, document } }
     )
   );
@@ -164,7 +164,7 @@ export async function queryCollection(collection, query) {
     requestWithCandidates(
       "queryCollection",
       "post",
-      ["/rag/query", "/v1/rag/query", "/api/rag/query", "/api/v1/rag/query"],
+      ["/rag/query", "/v1/rag/query"],
       { data: { collection, query } }
     )
   );
@@ -176,7 +176,7 @@ export async function searchWeb(query, options = {}) {
     requestWithCandidates(
       "searchWeb",
       "get",
-      ["/search", "/v1/search", "/api/search", "/api/v1/search"],
+      ["/search", "/v1/search"],
       { params: { q: query, ...options } }
     )
   );
