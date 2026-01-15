@@ -106,25 +106,33 @@ const XAI_MODELS = [
   "grok-4-0709",
 ];
 
+const ANTHROPIC_MODELS = [
+  "claude-3-7-sonnet-20250219",
+  "claude-opus-4-1-20250805",
+  "claude-opus-4-20250514",
+  "claude-sonnet-4-20250514",
+];
+
 function bucketedPriority(preferred) {
   const provider = preferred?.startsWith("gemini-")
     ? "google"
     : preferred?.startsWith("grok-")
       ? "xai"
-      : preferred?.startsWith("gpt-")
-        ? "openai"
-        : null;
+    : preferred?.startsWith("gpt-")
+      ? "openai"
+    : preferred?.startsWith("claude-")
+      ? "anthropic"
+      : null;
 
-  // Default order: OpenAI -> Google -> xAI.
-  let order = [...OPENAI_MODELS, ...GOOGLE_MODELS, ...XAI_MODELS];
+  // Default order: OpenAI -> Google -> xAI -> Anthropic.
+  const defaultOrder = [...OPENAI_MODELS, ...GOOGLE_MODELS, ...XAI_MODELS, ...ANTHROPIC_MODELS];
 
-  if (provider === "google") {
-    order = [...GOOGLE_MODELS, ...XAI_MODELS, ...OPENAI_MODELS];
-  } else if (provider === "xai") {
-    order = [...XAI_MODELS, ...GOOGLE_MODELS, ...OPENAI_MODELS];
-  }
-
-  return order;
+  if (!provider) return defaultOrder;
+  if (provider === "openai") return [...OPENAI_MODELS, ...GOOGLE_MODELS, ...XAI_MODELS, ...ANTHROPIC_MODELS];
+  if (provider === "google") return [...GOOGLE_MODELS, ...OPENAI_MODELS, ...XAI_MODELS, ...ANTHROPIC_MODELS];
+  if (provider === "xai") return [...XAI_MODELS, ...OPENAI_MODELS, ...GOOGLE_MODELS, ...ANTHROPIC_MODELS];
+  // provider === "anthropic"
+  return [...ANTHROPIC_MODELS, ...OPENAI_MODELS, ...GOOGLE_MODELS, ...XAI_MODELS];
 }
 
 function unique(list) {
@@ -132,8 +140,8 @@ function unique(list) {
 }
 
 function isAllowedModel(name) {
-  // Only allow OpenAI (gpt-), Google (gemini-), xAI (grok-)
-  return /^(gpt-|gemini-|grok-)/.test(name);
+  // Allow OpenAI (gpt-), Google (gemini-), xAI (grok-), Anthropic (claude-)
+  return /^(gpt-|gemini-|grok-|claude-)/.test(name);
 }
 
 async function resolveModelCandidates(requested) {

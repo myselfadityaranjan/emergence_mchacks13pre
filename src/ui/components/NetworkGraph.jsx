@@ -77,17 +77,17 @@ function NetworkGraph({ nodes = [], links = [], onSelect }) {
           forceLink(safeLinks)
             .id((d) => d.id)
             .distance((d) =>
-              d.source?.id === "genesis" || d.source === "genesis" ? 180 : 140
+              d.source?.id === "genesis" || d.source === "genesis" ? 220 : 180
             )
-            .strength(0.8)
+            .strength(0.65)
         )
-        .force("charge", forceManyBody().strength(-260))
+        .force("charge", forceManyBody().strength(-220))
         .force("center", forceCenter(size.width / 2, size.height / 2))
-        .force("x", forceX(size.width / 2).strength(0.08))
-        .force("y", forceY(size.height / 2).strength(0.08))
-        .force("collide", forceCollide().radius(70).strength(0.8))
+        .force("x", forceX(size.width / 2).strength(0.06))
+        .force("y", forceY(size.height / 2).strength(0.06))
+        .force("collide", forceCollide().radius(80).strength(0.85))
         .alpha(1)
-        .alphaDecay(0.04)
+        .alphaDecay(0.02) // slower decay for a more cinematic drift
         .on("tick", () => setSimNodes([...initial]));
 
       const genesisNode = initial.find((n) => n.role === "genesis");
