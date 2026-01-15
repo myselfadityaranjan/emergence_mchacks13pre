@@ -5,19 +5,17 @@ dotenv.config();
 
 /**
  * Backboard endpoint reference (per docs screenshot / v1.0.0 OAS):
- * Base URL: https://app.backboard.io/api
- * Potential paths observed: /messages, /v1/messages, /rag/query, /v1/rag/query, etc.
- * Because the public docs are inconsistent across versions, this client will probe multiple
- * path candidates until one succeeds per resource and cache the working path.
+ * Base URL: https://app.backboard.io/api/v1
+ * Path shape: /messages, /rag/query, /rag/store, /search, /memory
  */
 function normalizeBaseUrl(raw) {
   const cleaned = (raw || "").trim().replace(/\/+$/, "");
-  if (!cleaned) return "https://app.backboard.io/api";
-  if (cleaned.endsWith("/api")) return cleaned;
-  if (cleaned.endsWith("/api/")) return cleaned.replace(/\/+$/, "");
-  // if user provided host without /api, append /api
-  if (!cleaned.endsWith("/api")) return `${cleaned}/api`;
-  return cleaned;
+  if (!cleaned) return "https://app.backboard.io/api/v1";
+  if (cleaned.endsWith("/api/v1")) return cleaned;
+  if (cleaned.endsWith("/api/v1/")) return cleaned.replace(/\/+$/, "");
+  if (cleaned.endsWith("/api")) return `${cleaned}/v1`;
+  if (cleaned.endsWith("/api/")) return `${cleaned.replace(/\/+$/, "")}/v1`;
+  return `${cleaned}/api/v1`;
 }
 
 const BASE_URL = normalizeBaseUrl(process.env.BACKBOARD_BASE_URL);
@@ -130,55 +128,36 @@ export async function get(path, params = {}) {
 export async function invokeModel({ model, messages, tools = [], params = {} }) {
   ensureLive();
   return safeRequest("invokeModel", () =>
-    requestWithCandidates(
-      "invokeModel",
-      "post",
-      ["/messages", "/v1/messages"],
-      {
-        data: {
-          model,
-          messages,
-          tools,
-          params,
-        },
-      }
-    )
+    requestWithCandidates("invokeModel", "post", ["/messages"], {
+      data: { model, messages, tools, params },
+    })
   );
 }
 
 export async function storeDocument(collection, document) {
   ensureLive();
   return safeRequest("storeDocument", () =>
-    requestWithCandidates(
-      "storeDocument",
-      "post",
-      ["/rag/store", "/v1/rag/store"],
-      { data: { collection, document } }
-    )
+    requestWithCandidates("storeDocument", "post", ["/rag/store"], {
+      data: { collection, document },
+    })
   );
 }
 
 export async function queryCollection(collection, query) {
   ensureLive();
   return safeRequest("queryCollection", () =>
-    requestWithCandidates(
-      "queryCollection",
-      "post",
-      ["/rag/query", "/v1/rag/query"],
-      { data: { collection, query } }
-    )
+    requestWithCandidates("queryCollection", "post", ["/rag/query"], {
+      data: { collection, query },
+    })
   );
 }
 
 export async function searchWeb(query, options = {}) {
   ensureLive();
   return safeRequest("searchWeb", () =>
-    requestWithCandidates(
-      "searchWeb",
-      "get",
-      ["/search", "/v1/search"],
-      { params: { q: query, ...options } }
-    )
+    requestWithCandidates("searchWeb", "get", ["/search"], {
+      params: { q: query, ...options },
+    })
   );
 }
 
