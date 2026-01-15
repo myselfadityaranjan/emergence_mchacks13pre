@@ -1,21 +1,13 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import GenesisInput from "./screens/GenesisInput.jsx";
-import EmergenceView from "./screens/EmergenceView.jsx";
-import ControlRoom from "./screens/ControlRoom.jsx";
+import MissionControl from "./screens/MissionControl.jsx";
 import SynthesisView from "./screens/SynthesisView.jsx";
 import useEmergence from "./hooks/useEmergence.js";
 import useAgents from "./hooks/useAgents.js";
 import BackgroundFX from "./components/BackgroundFX.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import StatusBanner from "./components/StatusBanner.jsx";
-
-const views = [
-  { key: "input", label: "Genesis" },
-  { key: "emergence", label: "Emergence" },
-  { key: "control", label: "Control Room" },
-  { key: "synthesis", label: "Synthesis" },
-];
 
 export default function App() {
   const [view, setView] = useState("input");
@@ -28,6 +20,7 @@ export default function App() {
     status,
     stats,
     synthesis,
+    synthesisReady,
     startEmergence,
     error,
   } = useEmergence();
@@ -39,16 +32,21 @@ export default function App() {
 
   const handleStart = (mission) => {
     startEmergence(mission);
-    setView("emergence");
+    setView("mission");
   };
+
+  // Auto-advance to synthesis when ready.
+  if (view !== "synthesis" && status === "complete" && synthesisReady) {
+    setView("synthesis");
+  }
 
   const renderView = () => {
     if (view === "input") {
       return <GenesisInput task={task} onTaskChange={setTask} onStart={handleStart} status={status} />;
     }
-    if (view === "emergence") {
+    if (view === "mission") {
       return (
-        <EmergenceView
+        <MissionControl
           task={task}
           graphData={graphData}
           events={events}
@@ -56,13 +54,18 @@ export default function App() {
           selectedAgent={selected}
           onSelectAgent={(id) => (id ? selectAgent(id) : clearSelection())}
           status={status}
+          stats={stats}
         />
       );
     }
-    if (view === "control") {
-      return <ControlRoom stats={stats} events={events} />;
-    }
-    return <SynthesisView synthesis={synthesis} agents={agentMeta} task={task} />;
+    return (
+      <SynthesisView
+        synthesis={synthesis}
+        agents={agentMeta}
+        task={task}
+        ready={synthesisReady && status === "complete"}
+      />
+    );
   };
 
   return (
@@ -86,15 +89,23 @@ export default function App() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {views.map((tab) => (
-                <button
-                  key={tab.key}
-                  className={`tab ${view === tab.key ? "tab-active" : ""}`}
-                  onClick={() => setView(tab.key)}
-                >
-                  {tab.label}
-                </button>
-              ))}
+              <button className={`tab ${view === "input" ? "tab-active" : ""}`} onClick={() => setView("input")}>
+                Genesis
+              </button>
+              <button
+                className={`tab ${view === "mission" ? "tab-active" : ""}`}
+                onClick={() => setView("mission")}
+                disabled={status === "idle"}
+              >
+                Mission Control
+              </button>
+              <button
+                className={`tab ${view === "synthesis" ? "tab-active" : ""}`}
+                onClick={() => setView("synthesis")}
+                disabled={status !== "complete"}
+              >
+                Synthesis
+              </button>
               <span className="tag">Status: {status}</span>
             </div>
           </nav>

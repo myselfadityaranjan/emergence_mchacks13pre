@@ -1,13 +1,14 @@
-export default function SynthesisView({ synthesis, agents, task }) {
+export default function SynthesisView({ synthesis, agents, task, ready = false }) {
   const safeAgents = Array.isArray(agents) ? agents : [];
   const headline =
-    synthesis ||
+    (ready && synthesis) ||
     [
-      "Summary: Awaiting final synthesis...",
-      "Key Insights: Pending...",
-      "Proposed Approach: Pending...",
-      "Risks: Pending...",
-      "Next Steps: Pending...",
+      "Synthesizing…",
+      "Summary: pending",
+      "Key Insights: pending",
+      "Proposed Approach: pending",
+      "Risks: pending",
+      "Next Steps: pending",
     ].join("\n");
 
   return (
@@ -26,7 +27,7 @@ export default function SynthesisView({ synthesis, agents, task }) {
       <div className="panel p-6 grid grid-cols-3 gap-4">
         <div className="col-span-2 space-y-3">
           <div className="text-sm uppercase tracking-[0.2em] text-cyber-blue">
-            Cohesive Plan
+            {ready ? "Cohesive Plan" : "Synthesizing..."}
           </div>
           <div className="text-lg leading-relaxed text-slate-100 whitespace-pre-wrap">
             {headline}

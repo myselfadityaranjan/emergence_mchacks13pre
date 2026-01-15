@@ -90,19 +90,21 @@ function startDemoRun(task, state, scenario = "mental_health") {
 
   const synthesisText = IS_FINANCE
     ? [
-        "Summary: ASML-focused finance tracker with live price feeds, position health, and risk alerts.",
-        "Key Insights: Users want semiconductor-specific news, implied-vol indicators, and tax-lot clarity.",
-        "Proposed Approach: Mobile-first dashboard with sparkline tiles, broker sync (optional), and offline watchlist cache.",
-        "Risks: Data freshness, API rate limits, and over-alerting; mitigate with tiered polling + quiet hours.",
-        "Next Steps: Wire charts, connect market data mock, ship alert rules (price bands, volume spikes), pilot with 10 users.",
-      ].join("\n")
+        "Summary: ASML-focused finance tracker delivering live pricing, position health, semiconductor news sentiment, and proactive risk alerts tailored to a single high-conviction ticker.",
+        "Key Insights: Power-users want semiconductor-specific signals (lithography demand, export controls, earnings IV swings), clean tax-lot visibility, and alerting that avoids noise. Trust hinges on data freshness and transparent sourcing.",
+        "Proposed Approach: Mobile-first glassmorphic dashboard; real-time price via websockets; portfolio import (CSV/API); alert rule engine (price bands, volume/IV spikes, news sentiment); offline watchlist cache; sentiment ribbon for sector news.",
+        "Architecture: React Native client with encrypted local cache; data adapters for price/news; rule engine service; notification pipeline with rate-limits and quiet hours; optional broker sync. Charts: sparklines + mini depth; risk meter ring per position.",
+        "Risks: Stale data and API throttling, over-alerting, and poor explainability of signals. Mitigations: tiered polling with backoff, deduped alert batching, user-tunable thresholds, and per-alert provenance (source + timestamp).",
+        "Next Steps: Wire charting primitives and alert composer; integrate mock data feed; pilot with 10 users on ASML-only scope; add stress-test for rate limits; ship exportable activity log for compliance.",
+      ].join("\n\n")
     : [
-        "Summary: Calm, privacy-first mental health companion with daily check-ins, offline-first journaling, and guided CBT micro-sessions.",
-        "Key Insights: Users crave trust (privacy), gentle nudges, crisis shortcuts, and community with safety filters.",
-        "Proposed Approach: React Native app; encrypted local storage with optional sync; soothing gradients; 3-tap flows; adaptive journeys by mood.",
-        "Risks: Privacy, engagement drop-off, and alert fatigue; mitigate with transparent data handling, streaks, and low-friction shortcuts.",
-        "Next Steps: Wireframe key screens, finalize content scripts, run 10-user pilot, instrument telemetry + red-team privacy.",
-      ].join("\n");
+        "Summary: Calm, privacy-first mental health companion with daily check-ins, offline-first journaling, guided CBT micro-sessions, and adaptive nudges that respect user consent.",
+        "Key Insights: Users need trust (clear data handling, no surprise sharing), gentle habit cues, crisis shortcuts, and a safe community layer with strong moderation. Offline-first matters for discretion and reliability.",
+        "Proposed Approach: React Native app; encrypted local storage with optional sync; 3-tap flows for mood check-in, journal, and guided practice; adaptive journeys by mood/streak; optional peer circles with safety filters.",
+        "Architecture: React Native + local encrypted SQLite; optional sync (Firebase or Supabase); content engine for CBT/DBT scripts; telemetry with privacy budget; feature flags for experiments; push pipeline with quiet hours.",
+        "Risks: Privacy perception, engagement drop-off after week 2, alert fatigue, and crisis routing gaps. Mitigations: transparent data copy everywhere, streaks + low-friction shortcuts, capped notifications, crisis CTA always visible.",
+        "Next Steps: Wire onboarding + mood wheel + journal; script 10 CBT micro-sessions; run 10-user pilot; instrument telemetry and privacy red-team; add A/B for notification cadence.",
+      ].join("\n\n");
 
   const schedule = (ms, fn) => setTimeout(fn, ms);
 
@@ -126,16 +128,24 @@ function startDemoRun(task, state, scenario = "mental_health") {
   // Simulated messages/results.
   const snippets = IS_FINANCE
     ? {
-        researcher: "Market pulse: ASML uptrend; catalysts: lithography demand, EUV capacity; risks: export controls, cyclical capex.",
-        analyst: "Signals: watch volume spikes + IV crush around earnings; alert on -3% intraday with news sentiment filter.",
-        architect: "Stack: React Native + local cache; market data via websocket; rule engine for alerts; portfolio import via CSV/API.",
-        designer: "UI: dark glass cards with cyan/green sparklines; watchlist chips; risk meter ring; alert composer wizard.",
+        researcher:
+          "Market pulse: ASML uptrend; catalysts: EUV/DUV demand, capacity expansion, AI-driven chips; risks: export controls, cyclic capex. News sentiment: neutral→bullish last 14d.",
+        analyst:
+          "Signals to track: volume/IV spikes around earnings; -3% intraday with negative sentiment; +5% breakout with high volume. Build alert templates and noise filters.",
+        architect:
+          "Stack: React Native + encrypted local cache; websocket price feed; rule engine microservice; broker import (CSV/API); notification pipeline with rate limits.",
+        designer:
+          "UI: dark glass, cyan/green sparklines, stacked tiles (price, IV, news), alert composer wizard, risk meter ring per position, timeline of alerts with provenance.",
       }
     : {
-        researcher: "Trends: AI personalization, privacy-by-default, offline-first journaling. Competitors: Calm, Headspace, Wysa; gaps in community safety.",
-        analyst: "Risks: privacy trust, drop-off after week 2, crisis routing; add transparent data copy, streaks, crisis shortcuts.",
-        architect: "Stack: React Native, local SQLite w/ encryption, optional Firebase sync; services: auth, telemetry, crash reporting.",
-        designer: "UX: neon-accent calm palette, glass panels, code-rain backgrounds; flows: 3-tap check-in, mood wheel, adaptive insights.",
+        researcher:
+          "Trends: AI personalization, privacy-by-default, offline-first journaling. Competitors: Calm, Headspace, Wysa; gaps in safe community and crisis shortcuts.",
+        analyst:
+          "Risks: privacy trust, drop-off after week 2, alert fatigue, and weak crisis routing. Recommendations: transparent data copy, streaks, low-friction crisis CTA.",
+        architect:
+          "Stack: React Native, encrypted local SQLite, optional sync; content engine for CBT/DBT; telemetry with privacy budget; feature flags for experiments.",
+        designer:
+          "UX: neon-accent calm palette, glass panels, code-rain background; 3-tap check-in, mood wheel, adaptive insights; community with strong safety filters.",
       };
 
   workers.forEach((w, idx) => {

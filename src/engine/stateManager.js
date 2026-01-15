@@ -16,6 +16,7 @@ export class StateManager {
       role: agent.role,
       parentId: agent.parentId,
       state: agent.state,
+      model: agent.model || agent.modelName || "auto",
       depth,
     };
     this.agents.set(agent.id, record);

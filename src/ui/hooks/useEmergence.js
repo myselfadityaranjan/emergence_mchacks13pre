@@ -19,6 +19,7 @@ export function useEmergence() {
   const [synthesis, setSynthesis] = useState("");
   const [status, setStatus] = useState("idle"); // idle | starting | running | complete | error
   const [error, setError] = useState(null);
+  const [synthesisReady, setSynthesisReady] = useState(false);
 
   const pollRef = useRef(null);
 
@@ -149,6 +150,7 @@ export function useEmergence() {
         setLinks([]);
         setEvents([]);
         setSynthesis("");
+        setSynthesisReady(false);
         return;
       } catch (err) {
         console.error("Start failed, using mock", err);
@@ -181,6 +183,17 @@ export function useEmergence() {
     status,
   };
 
+  // Gate synthesis display by delay when complete.
+  useEffect(() => {
+    if (status !== "complete") {
+      setSynthesisReady(false);
+      return undefined;
+    }
+    if (synthesisReady) return undefined;
+    const id = setTimeout(() => setSynthesisReady(true), 12000);
+    return () => clearTimeout(id);
+  }, [status, synthesisReady]);
+
   return {
     task,
     setTask,
@@ -188,6 +201,7 @@ export function useEmergence() {
     links,
     events,
     synthesis,
+    synthesisReady,
     status,
     error,
     stats,

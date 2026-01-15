@@ -135,6 +135,7 @@ export class Agent {
         throw err;
       }
 
+      const modelName = completion?.model || process.env.BACKBOARD_MODEL_NAME || "auto";
       const output =
         completion?.output ||
         completion?.data ||
@@ -145,7 +146,7 @@ export class Agent {
         agentId: this.id,
         role: this.role,
         task,
-        model,
+        model: modelName,
         output,
         searchResults,
       };
