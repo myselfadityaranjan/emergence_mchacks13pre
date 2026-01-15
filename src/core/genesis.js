@@ -3,7 +3,6 @@ import { DEFAULT_TEAM, ROLES } from "../agents/roles.js";
 import { TaskDecomposer } from "./taskDecomposer.js";
 import { AgentSpawner } from "./agentSpawner.js";
 import Synthesizer from "./synthesizer.js";
-import { storeEmergence } from "../backboard/rag.js";
 import { MessageBus } from "./messageBus.js";
 
 export class Genesis {
@@ -12,7 +11,6 @@ export class Genesis {
     taskDecomposer = new TaskDecomposer({ rag: null }),
     agentSpawner,
     synthesizer = new Synthesizer(),
-    rag,
     stateManager,
     maxWorkers = 5,
   } = {}) {
@@ -21,7 +19,6 @@ export class Genesis {
     this.taskDecomposer = taskDecomposer;
     this.agentSpawner = agentSpawner || new AgentSpawner({ messageBus, taskDecomposer, stateManager });
     this.synthesizer = synthesizer;
-    this.rag = rag;
     this.stateManager = stateManager;
     this.maxWorkers = maxWorkers;
     this.outputs = [];
@@ -84,18 +81,6 @@ export class Genesis {
       results,
       synthesis,
     };
-
-    if (this.rag) {
-      await storeEmergence({
-        task,
-        solution: { summary: synthesis },
-        agents: results.map((r) => ({
-          id: r.agentId,
-          role: r.role,
-          model: r.model,
-        })),
-      });
-    }
 
     if (this.stateManager) {
       this.stateManager.setSynthesis(synthesis);

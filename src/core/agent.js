@@ -1,13 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { selectModel } from "../backboard/routing.js";
 import { invokeModel } from "../backboard/client.js";
-import {
-  appendAgentLog,
-  getAgentLog,
-  inheritParentMemory,
-  setAgentState,
-} from "../backboard/memory.js";
-import { performSearch } from "../backboard/search.js";
 import { getPromptForRole } from "../agents/prompts/index.js";
 import { getCapabilities } from "../agents/capabilities.js";
 import { demoAgentResult } from "../backboard/demo.js";
@@ -45,12 +37,11 @@ export class Agent {
 
   async initialize() {
     await this.setState(AGENT_STATES.INITIALIZING);
-    await inheritParentMemory(this.id, this.parentId);
-
     this.unsubscribe = this.messageBus.subscribe(this.id, (msg) =>
       this.handleMessage(msg)
     );
 
+    this.log = [];
     await this.appendLog({
       type: "lifecycle",
       message: "Initialized",
@@ -62,14 +53,14 @@ export class Agent {
 
   async setState(next) {
     this.state = next;
-    await setAgentState(this.id, next);
     if (this.stateManager) {
       this.stateManager.updateAgentState(this.id, next);
     }
   }
 
   async appendLog(entry) {
-    return appendAgentLog(this.id, entry);
+    this.log = [...(this.log || []), { ...entry, ts: new Date().toISOString() }];
+    return this.log;
   }
 
   async handleMessage(message) {
@@ -84,19 +75,7 @@ export class Agent {
     await this.setState(AGENT_STATES.WORKING);
     this.task = task;
 
-    let searchResults = [];
-    if (this.capabilities.includes("search")) {
-      if (this.stateManager) {
-        this.stateManager.addEvent({
-          type: "search",
-          text: `${this.role} searching: ${task.slice(0, 64)}`,
-          agentId: this.id,
-        });
-      }
-      searchResults = await performSearch(this.id, task, { limit: 5 });
-    }
-
-    const response = await this.generateResponse(task, searchResults);
+    const response = await this.generateResponse(task, []);
     await this.appendLog({ type: "result", response });
     await this.setState(AGENT_STATES.COMPLETE);
 
@@ -115,7 +94,7 @@ export class Agent {
 
   async generateResponse(task, searchResults = []) {
     const prompt = getPromptForRole(this.role);
-    const log = await getAgentLog(this.id);
+    const log = this.log || [];
     const recentContext = log
       .slice(-3)
       .map((item) => `${item.type}: ${JSON.stringify(item.message || item)}`)
@@ -140,10 +119,7 @@ export class Agent {
       .filter(Boolean)
       .join("\n\n");
 
-    const { model } = selectModel({
-      role: this.role,
-      taskType: "analysis",
-    });
+    const model = "gpt-4o";
 
     try {
       let completion = null;

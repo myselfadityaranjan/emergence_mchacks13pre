@@ -1,6 +1,4 @@
-import { selectModel } from "../backboard/routing.js";
 import { invokeModel } from "../backboard/client.js";
-import { querySimilar } from "../backboard/rag.js";
 import { DEFAULT_TEAM } from "../agents/roles.js";
 import { demoDecomposition } from "../backboard/demo.js";
 
@@ -10,24 +8,10 @@ export class TaskDecomposer {
   }
 
   async decompose(task, context = {}) {
-    const similar = await querySimilar(task, 3);
-    const { model } = selectModel({
-      role: "genesis",
-      taskType: "planning",
-      preferredCategory: "GENESIS",
-    });
-
     const prompt = [
       "You are Genesis planning subtasks for an emergence.",
       `Main task: ${task}`,
-      similar.length
-        ? `Similar past emergences:\n${similar
-            .map(
-              (hit, idx) =>
-                `${idx + 1}. ${hit.task} -> ${hit.solution?.summary || "n/a"}`
-            )
-            .join("\n")}`
-        : "No similar past emergences found.",
+      "No similar past emergences found.",
       `Available roles: ${DEFAULT_TEAM.join(", ")}`,
       "Return 3-5 concise subtasks as JSON array: [{\"title\",\"role\",\"description\"}].",
       "Prefer diversity in roles and avoid redundant subtasks.",

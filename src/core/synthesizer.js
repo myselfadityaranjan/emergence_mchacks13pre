@@ -1,13 +1,8 @@
-import { selectModel } from "../backboard/routing.js";
 import { invokeModel } from "../backboard/client.js";
 
 export class Synthesizer {
   async synthesize(task, agentOutputs = []) {
-    const { model } = selectModel({
-      role: "genesis",
-      taskType: "synthesis",
-      preferredCategory: "GENESIS",
-    });
+    const model = "gpt-4o";
 
     const prompt = [
       `Task: ${task}`,
